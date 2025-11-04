@@ -45,6 +45,9 @@ import {
 } from '../math/decimal';
 import type { PAMGraph } from './graph-types';
 import crypto from 'crypto';
+import { PrismaClient } from '@prisma/client';
+import { fetchIndexValue } from '../timeseries/index-value-queries';
+import type { TimeOperation } from '../timeseries/index-value-queries';
 
 // ============================================================================
 // Execution Engine
@@ -168,23 +171,30 @@ async function executeFactor(
 
   // If series reference, fetch from timeseries
   if (config.series) {
-    // TODO: Fetch from IndexValue table
-    // For now, throw error indicating this needs database access
-    throw new Error(
-      `Factor node ${node.id}: Timeseries lookup not yet implemented. ` +
-        `Need to fetch series '${config.series}' from database.`
-    );
+    // Fetch from IndexValue table
+    const prisma = new PrismaClient();
 
-    // Future implementation:
-    // const value = await fetchIndexValue(
-    //   context.tenantId,
-    //   config.series,
-    //   context.asOfDate,
-    //   config.lagDays || 0,
-    //   config.operation || 'value',
-    //   context.versionPreference
-    // );
-    // return D(value);
+    try {
+      const result = await fetchIndexValue(prisma, {
+        tenantId: context.tenantId,
+        seriesCode: config.series,
+        asOfDate: context.asOfDate,
+        versionPreference: context.versionPreference,
+        lagDays: config.lagDays || 0,
+        operation: (config.operation as TimeOperation) || 'value',
+      });
+
+      if (!result) {
+        throw new Error(
+          `Factor node ${node.id}: No value found for series '${config.series}' ` +
+            `on ${context.asOfDate.toISOString().split('T')[0]}`
+        );
+      }
+
+      return result.value;
+    } finally {
+      await prisma.$disconnect();
+    }
   }
 
   throw new Error(`Factor node ${node.id}: Must have either value or series`);
@@ -281,11 +291,28 @@ async function executeConvert(
       return multiply(input, D(config.fixedRate));
     } else if (config.fxSeries) {
       // Fetch FX rate from timeseries
-      // TODO: Implement FX lookup
-      throw new Error(
-        `Convert node ${node.id}: FX series lookup not yet implemented. ` +
-          `Need to fetch series '${config.fxSeries}' from database.`
-      );
+      const prisma = new PrismaClient();
+
+      try {
+        const result = await fetchIndexValue(prisma, {
+          tenantId: context.tenantId,
+          seriesCode: config.fxSeries,
+          asOfDate: context.asOfDate,
+          versionPreference: context.versionPreference,
+          operation: 'value',
+        });
+
+        if (!result) {
+          throw new Error(
+            `Convert node ${node.id}: No FX rate found for series '${config.fxSeries}' ` +
+              `on ${context.asOfDate.toISOString().split('T')[0]}`
+          );
+        }
+
+        return multiply(input, result.value);
+      } finally {
+        await prisma.$disconnect();
+      }
     } else {
       throw new Error(
         `Convert node ${node.id}: Currency conversion requires fixedRate or fxSeries`
