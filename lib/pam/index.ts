@@ -57,6 +57,14 @@ export {
   printExecutionPlan,
 } from './graph-compiler';
 
+// Execution
+export {
+  executeGraph,
+  hashExecutionInputs,
+  createExecutionPlan,
+  type ExecutionPlan,
+} from './graph-executor';
+
 // Test fixtures (for testing/examples)
 export {
   validGraphs,
