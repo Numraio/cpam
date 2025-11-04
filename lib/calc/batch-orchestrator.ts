@@ -98,7 +98,7 @@ export async function createCalculationBatch(
 
   // Compute inputs hash for idempotency
   const inputs: BatchInputs = {
-    pamGraph: pam.graph as PAMGraph,
+    pamGraph: pam.graph as unknown as PAMGraph,
     asOfDate,
     versionPreference,
     itemIds: pam.items.map((i) => i.id).sort(), // Sort for deterministic hash
@@ -177,14 +177,23 @@ export async function executeCalculationBatch(
 ): Promise<BatchCalculationResult> {
   const { pageSize = 100, continueOnError = true } = options;
 
-  // Fetch batch
+  // Fetch batch (first get basic info to check contractId)
+  const batchInfo = await prisma.calcBatch.findUnique({
+    where: { id: batchId },
+  });
+
+  if (!batchInfo) {
+    throw new Error(`Batch not found: ${batchId}`);
+  }
+
+  // Now fetch with items filtered by contractId
   const batch = await prisma.calcBatch.findUnique({
     where: { id: batchId },
     include: {
       pam: {
         include: {
           items: {
-            where: batch.contractId ? { contractId: batch.contractId } : undefined,
+            where: batchInfo.contractId ? { contractId: batchInfo.contractId } : undefined,
           },
         },
       },
@@ -217,7 +226,7 @@ export async function executeCalculationBatch(
     data: { status: 'RUNNING', startedAt: new Date() },
   });
 
-  const pamGraph = batch.pam.graph as PAMGraph;
+  const pamGraph = batch.pam.graph as unknown as PAMGraph;
   const items = batch.pam.items;
   let itemsSucceeded = 0;
   let itemsFailed = 0;
@@ -424,6 +433,16 @@ export async function getBatchStatus(
   prisma: PrismaClient,
   batchId: string
 ): Promise<BatchCalculationResult> {
+  // First get basic batch info
+  const batchInfo = await prisma.calcBatch.findUnique({
+    where: { id: batchId },
+  });
+
+  if (!batchInfo) {
+    throw new Error(`Batch not found: ${batchId}`);
+  }
+
+  // Now fetch with counts
   const batch = await prisma.calcBatch.findUnique({
     where: { id: batchId },
     include: {
@@ -433,7 +452,7 @@ export async function getBatchStatus(
           _count: {
             select: {
               items: {
-                where: batch.contractId ? { contractId: batch.contractId } : undefined,
+                where: batchInfo.contractId ? { contractId: batchInfo.contractId } : undefined,
               },
             },
           },

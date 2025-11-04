@@ -415,7 +415,7 @@ describe('Decimal Math Engine', () => {
   describe('Acceptance Tests', () => {
     it('Given values near .005 boundary, then banker\'s rounding behaves as spec', () => {
       // Test multiple .005 boundaries
-      const test Cases = [
+      const testCases = [
         { input: '0.005', decimals: 2, expected: '0.00' }, // Round to even (0)
         { input: '0.015', decimals: 2, expected: '0.02' }, // Round to even (2)
         { input: '0.025', decimals: 2, expected: '0.02' }, // Round to even (2)
