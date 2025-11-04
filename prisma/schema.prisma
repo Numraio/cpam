@@ -70,18 +70,31 @@ model User {
 }
 
 model Team {
-  id              String       @id @default(uuid())
+  id              String   @id @default(uuid())
   name            String
-  slug            String       @unique
-  domain          String?      @unique
-  defaultRole     Role         @default(MEMBER)
+  slug            String   @unique
+  domain          String?  @unique
+  defaultRole     Role     @default(MEMBER)
   billingId       String?
   billingProvider String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @default(now())
-  members         TeamMember[]
-  invitations     Invitation[]
-  apiKeys         ApiKey[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  // BoxyHQ relations
+  members     TeamMember[]
+  invitations Invitation[]
+  apiKeys     ApiKey[]
+
+  // CPAM relations
+  contracts      Contract[]      @relation("ContractTenant")
+  items          Item[]          @relation("ItemTenant")
+  pams           PAM[]           @relation("PAMTenant")
+  indexSeries    IndexSeries[]   @relation("IndexSeriesTenant")
+  indexValues    IndexValue[]    @relation("IndexValueTenant")
+  calcBatches    CalcBatch[]     @relation("CalcBatchTenant")
+  calcResults    CalcResult[]    @relation("CalcResultTenant")
+  approvalEvents ApprovalEvent[] @relation("ApprovalEventTenant")
+  auditLogs      AuditLog[]      @relation("AuditLogTenant")
 
   @@index([billingId])
 }
@@ -217,4 +230,239 @@ model jackson_ttl {
 
   @@index([expiresAt], map: "_jackson_ttl_expires_at")
   @@ignore
+}
+
+// ============================================================================
+// CPAM Domain Models
+// ============================================================================
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum VersionTag {
+  PRELIMINARY
+  FINAL
+  REVISED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CalcStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// Tenant model - maps to Team for multi-tenancy
+// We use Team.id as tenant_id throughout CPAM models
+// This allows BoxyHQ's team management to drive tenant isolation
+
+model Contract {
+  id          String         @id @default(uuid())
+  tenantId    String // FK to Team.id
+  name        String
+  description String?        @db.Text
+  status      ContractStatus @default(DRAFT)
+  startDate   DateTime
+  endDate     DateTime?
+  createdBy   String // FK to User.id
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  tenant Team   @relation("ContractTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  items  Item[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([tenantId, status])
+}
+
+model Item {
+  id           String   @id @default(uuid())
+  tenantId     String // FK to Team.id
+  contractId   String
+  sku          String // Product SKU or identifier
+  name         String
+  description  String?  @db.Text
+  basePrice    Decimal  @db.Decimal(20, 12) // 12 decimal places for financial precision
+  baseCurrency String   @db.VarChar(3) // ISO 4217 currency code
+  uom          String // Unit of measure (kg, lb, MT, etc.)
+  pamId        String? // Optional: link to PAM for this item
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  tenant   Team         @relation("ItemTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  contract Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  pam      PAM?         @relation("ItemPAM", fields: [pamId], references: [id], onDelete: SetNull)
+  results  CalcResult[]
+
+  @@unique([tenantId, contractId, sku])
+  @@index([tenantId])
+  @@index([contractId])
+  @@index([pamId])
+}
+
+model PAM {
+  id          String   @id @default(uuid())
+  tenantId    String // FK to Team.id
+  name        String
+  description String?  @db.Text
+  version     Int      @default(1)
+  graph       Json // Stores PAMGraph structure (nodes, edges, metadata)
+  createdBy   String // FK to User.id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant      Team        @relation("PAMTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  items       Item[]      @relation("ItemPAM")
+  calcBatches CalcBatch[]
+
+  @@index([tenantId])
+  @@index([tenantId, name])
+}
+
+model IndexSeries {
+  id          String   @id @default(uuid())
+  tenantId    String // FK to Team.id
+  seriesCode  String // e.g., "PLATTS_BRENT", "USD_EUR"
+  name        String
+  description String?  @db.Text
+  provider    String // e.g., "PLATTS", "OANDA", "MANUAL"
+  dataType    String // "INDEX", "FX", "CUSTOM"
+  unit        String? // For indices: "USD/bbl", for FX: currency pair
+  frequency   String // "DAILY", "WEEKLY", "MONTHLY"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant Team         @relation("IndexSeriesTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  values IndexValue[]
+
+  @@unique([tenantId, seriesCode])
+  @@index([tenantId])
+  @@index([provider])
+}
+
+model IndexValue {
+  id                String     @id @default(uuid())
+  tenantId          String // FK to Team.id
+  seriesId          String
+  asOfDate          DateTime   @db.Date
+  value             Decimal    @db.Decimal(20, 12) // 12dp precision
+  versionTag        VersionTag @default(PRELIMINARY)
+  providerTimestamp DateTime? // When provider published this data
+  ingestedAt        DateTime   @default(now())
+
+  // Relations
+  tenant Team        @relation("IndexValueTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  series IndexSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  // Composite PK: series + date + version allows prelim/final/revised versions
+  @@unique([seriesId, asOfDate, versionTag])
+  @@index([tenantId])
+  @@index([seriesId, asOfDate])
+  @@index([asOfDate])
+}
+
+model CalcBatch {
+  id          String     @id @default(uuid())
+  tenantId    String // FK to Team.id
+  pamId       String
+  contractId  String? // Optional: calculate for specific contract
+  inputsHash  String // Hash of inputs for idempotency
+  status      CalcStatus @default(QUEUED)
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?    @db.Text
+  metadata    Json? // Store run parameters, triggered by, etc.
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  tenant  Team         @relation("CalcBatchTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  pam     PAM          @relation(fields: [pamId], references: [id], onDelete: Cascade)
+  results CalcResult[]
+
+  @@index([tenantId])
+  @@index([pamId])
+  @@index([status])
+  @@index([inputsHash])
+}
+
+model CalcResult {
+  id               String   @id @default(uuid())
+  tenantId         String // FK to Team.id
+  batchId          String
+  itemId           String
+  adjustedPrice    Decimal  @db.Decimal(20, 12)
+  adjustedCurrency String   @db.VarChar(3)
+  contributions    Json // Waterfall of factor contributions
+  effectiveDate    DateTime @db.Date
+  createdAt        DateTime @default(now())
+
+  // Relations
+  tenant Team      @relation("CalcResultTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  batch  CalcBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  item   Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, itemId, effectiveDate])
+  @@index([tenantId])
+  @@index([batchId])
+  @@index([itemId])
+}
+
+model ApprovalEvent {
+  id         String         @id @default(uuid())
+  tenantId   String // FK to Team.id
+  entityType String // "CALC_BATCH", "CONTRACT", "PAM"
+  entityId   String
+  status     ApprovalStatus @default(PENDING)
+  approvedBy String? // FK to User.id
+  rejectedBy String? // FK to User.id
+  comments   String?        @db.Text
+  approvedAt DateTime?
+  rejectedAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  // Relations
+  tenant Team @relation("ApprovalEventTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String // FK to Team.id
+  userId     String // FK to User.id
+  action     String // "CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "CALCULATE"
+  entityType String // "CONTRACT", "ITEM", "PAM", "CALC_BATCH"
+  entityId   String
+  changes    Json? // Store before/after state
+  ipAddress  String?
+  userAgent  String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  // Relations
+  tenant Team @relation("AuditLogTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([tenantId, createdAt])
 }
