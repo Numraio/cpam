@@ -32,6 +32,13 @@ export interface IndexValueResult {
   effectiveDate: Date;
   versionTag: VersionTag;
   seriesCode: string;
+  /** Warning if value was fill-forwarded */
+  warning?: {
+    type: 'fill_forward';
+    message: string;
+    gapDays: number;
+    actualDate: Date;
+  };
 }
 
 export interface RangeQueryResult {
@@ -119,7 +126,8 @@ export async function fetchIndexValue(
     }
   }
 
-  return null; // No value found for any version
+  // No value found - try fill-forward (up to 10 days)
+  return fillForward(prisma, series.id, effectiveDate, preferenceOrder, seriesCode);
 }
 
 /**
@@ -390,6 +398,70 @@ async function fetchTimeBasedOperation(
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Fill-forward: Find most recent value within 10 calendar days
+ *
+ * If a value exists within 10 days, return it with a warning.
+ * If gap > 10 days, throw an error to block calculation.
+ *
+ * @param prisma - Prisma client
+ * @param seriesId - Series ID
+ * @param requestedDate - Requested date
+ * @param preferenceOrder - Version preference order
+ * @param seriesCode - Series code
+ * @returns Index value result with warning, or null if gap > 10 days
+ */
+async function fillForward(
+  prisma: PrismaClient,
+  seriesId: string,
+  requestedDate: Date,
+  preferenceOrder: VersionTag[],
+  seriesCode: string
+): Promise<IndexValueResult | null> {
+  const MAX_FILL_FORWARD_DAYS = 10;
+
+  // Look back up to 10 days
+  for (let daysBack = 1; daysBack <= MAX_FILL_FORWARD_DAYS; daysBack++) {
+    const lookbackDate = new Date(requestedDate);
+    lookbackDate.setDate(lookbackDate.getDate() - daysBack);
+
+    // Try each version in preference order
+    for (const version of preferenceOrder) {
+      const value = await prisma.indexValue.findUnique({
+        where: {
+          seriesId_asOfDate_versionTag: {
+            seriesId,
+            asOfDate: lookbackDate,
+            versionTag: version,
+          },
+        },
+      });
+
+      if (value) {
+        // Found a value - return with warning
+        return {
+          value: D(value.value.toString()),
+          effectiveDate: requestedDate,
+          versionTag: value.versionTag,
+          seriesCode,
+          warning: {
+            type: 'fill_forward',
+            message: `Value fill-forwarded from ${daysBack} day(s) ago (${lookbackDate.toISOString().split('T')[0]})`,
+            gapDays: daysBack,
+            actualDate: lookbackDate,
+          },
+        };
+      }
+    }
+  }
+
+  // Gap > 10 days - throw error to block calculation
+  throw new Error(
+    `No index value found for series '${seriesCode}' within ${MAX_FILL_FORWARD_DAYS} days of ${requestedDate.toISOString().split('T')[0]}. ` +
+    `Gap exceeds fill-forward window. Please load recent data or adjust calculation date.`
+  );
+}
 
 /**
  * Gets version preference order based on preferred version
