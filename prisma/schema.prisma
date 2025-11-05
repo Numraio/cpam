@@ -412,6 +412,18 @@ model CalcResult {
   effectiveDate    DateTime @db.Date
   createdAt        DateTime @default(now())
 
+  // Approval fields
+  isApproved  Boolean   @default(false)
+  approvedBy  String? // FK to User.id
+  approvedAt  DateTime?
+
+  // Override fields (for manual price adjustments)
+  isOverridden             Boolean   @default(false)
+  originalCalculatedPrice  Decimal?  @db.Decimal(20, 12) // Preserve original calculation
+  overrideReason           String?   @db.Text
+  overriddenBy             String? // FK to User.id
+  overriddenAt             DateTime?
+
   // Relations
   tenant Team      @relation("CalcResultTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   batch  CalcBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
@@ -421,6 +433,8 @@ model CalcResult {
   @@index([tenantId])
   @@index([batchId])
   @@index([itemId])
+  @@index([isApproved])
+  @@index([isOverridden])
 }
 
 model ApprovalEvent {
