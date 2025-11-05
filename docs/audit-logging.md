@@ -10,6 +10,7 @@ The audit logging system provides:
 - **PII masking**: Automatic masking of sensitive fields
 - **Domain events**: Typed helpers for common actions
 - **Query API**: Flexible querying with filters and pagination
+- **JSONL Export**: Machine-readable export with integrity verification
 - **Multi-tenant**: Tenant-isolated audit logs
 
 ## Basic Usage
@@ -492,6 +493,218 @@ export default function AuditTrail({ entityType, entityId }: Props) {
     </div>
   );
 }
+```
+
+## JSONL Export
+
+Machine-readable export of audit logs in JSONL (JSON Lines) format with integrity verification.
+
+### Export Audit Logs
+
+```typescript
+import { exportAuditLogsAsJSONL } from '@/lib/audit/audit-export';
+
+const result = await exportAuditLogsAsJSONL(prisma, {
+  tenantId: 'tenant-123',
+  includeHash: true,
+});
+
+console.log(`Exported ${result.totalEntries} entries`);
+console.log(`SHA-256 hash: ${result.hash}`);
+console.log(`JSONL content:\n${result.jsonl}`);
+```
+
+### JSONL Format
+
+Each line is a JSON object:
+
+```jsonl
+{"action":"CREATE","correlationId":"abc123","createdAt":"2024-01-01T00:00:00.000Z","entityId":"contract-1","entityType":"CONTRACT","id":"entry-1","ipAddress":"192.168.1.0","tenantId":"tenant-123","userId":"user-456"}
+{"action":"APPROVE","correlationId":"abc123","createdAt":"2024-01-01T00:01:00.000Z","entityId":"batch-1","entityType":"CALC_BATCH","id":"entry-2","ipAddress":"192.168.1.0","tenantId":"tenant-123","userId":"user-456"}
+```
+
+### Deterministic Output
+
+Export output is deterministic (same input → same output):
+
+```typescript
+const export1 = await exportAuditLogsAsJSONL(prisma, { tenantId });
+const export2 = await exportAuditLogsAsJSONL(prisma, { tenantId });
+
+// Always identical
+expect(export1.jsonl).toBe(export2.jsonl);
+expect(export1.hash).toBe(export2.hash);
+```
+
+### Integrity Verification
+
+Verify export hasn't been tampered with:
+
+```typescript
+import { verifyExportIntegrity } from '@/lib/audit/audit-export';
+
+const result = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  includeHash: true,
+});
+
+const isValid = verifyExportIntegrity(result.jsonl, result.hash!);
+
+if (!isValid) {
+  throw new Error('Export integrity check failed - data may be tampered');
+}
+```
+
+### Streaming Export
+
+For large exports that don't fit in memory:
+
+```typescript
+import { streamAuditLogsAsJSONL } from '@/lib/audit/audit-export';
+
+const lines: string[] = [];
+
+const result = await streamAuditLogsAsJSONL(
+  prisma,
+  { tenantId },
+  (line) => {
+    // Process each line as it's exported
+    lines.push(line);
+    // Or write to file, send to S3, etc.
+  }
+);
+
+console.log(`Streamed ${result.totalEntries} entries`);
+```
+
+### Filtered Export
+
+Export with filters:
+
+```typescript
+// Export only approvals
+const approvals = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  action: 'APPROVE',
+});
+
+// Export specific entity history
+const contractHistory = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  entityType: 'CONTRACT',
+  entityId: 'contract-123',
+});
+
+// Export date range
+const q4Audit = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  startDate: new Date('2024-10-01'),
+  endDate: new Date('2024-12-31'),
+});
+
+// Export correlated workflow
+const workflow = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  correlationId: 'workflow-xyz',
+});
+```
+
+### API Endpoint
+
+Download via API:
+
+```typescript
+// GET /api/audit/export?format=jsonl&download=true
+fetch('/api/audit/export?format=jsonl&download=true')
+  .then((res) => {
+    const hash = res.headers.get('X-Export-Hash');
+    const count = res.headers.get('X-Export-Count');
+    return res.text();
+  })
+  .then((jsonl) => {
+    console.log(`Downloaded ${jsonl.split('\n').length} entries`);
+  });
+```
+
+### Redaction
+
+Sensitive fields are automatically redacted:
+
+```typescript
+// IP addresses redacted to /24 subnet
+// 192.168.1.42 → 192.168.1.0
+
+// User agents redacted to browser/version
+// "Mozilla/5.0 ... Chrome/91.0.4472.124 ..." → "Chrome/91.0"
+```
+
+### Pagination
+
+Large exports are automatically paginated:
+
+```typescript
+const result = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  pageSize: 1000, // Process 1000 entries at a time
+});
+
+console.log(`Processed ${result.totalPages} pages`);
+```
+
+### Use Cases
+
+**Compliance Archival**:
+```typescript
+// Export monthly audit logs for compliance
+const monthlyAudit = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  startDate: new Date('2024-01-01'),
+  endDate: new Date('2024-01-31'),
+  includeHash: true,
+});
+
+// Store in S3 with hash
+await s3.putObject({
+  Bucket: 'audit-archives',
+  Key: `audit-2024-01.jsonl`,
+  Body: monthlyAudit.jsonl,
+  Metadata: {
+    'sha256-hash': monthlyAudit.hash!,
+  },
+});
+```
+
+**Incident Investigation**:
+```typescript
+// Export all events for a specific batch
+const incidentAudit = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  entityId: 'suspicious-batch-123',
+  includeHash: true,
+});
+
+// Provide to security team
+fs.writeFileSync('incident-audit.jsonl', incidentAudit.jsonl);
+```
+
+**External Audit**:
+```typescript
+// Export all audit logs for external auditor
+const fullAudit = await exportAuditLogsAsJSONL(prisma, {
+  tenantId,
+  includeHash: true,
+});
+
+// Generate verification report
+const report = {
+  exportDate: new Date().toISOString(),
+  totalEntries: fullAudit.totalEntries,
+  sha256Hash: fullAudit.hash,
+  verificationInstructions: 'Run: sha256sum audit.jsonl',
+};
+
+fs.writeFileSync('audit-report.json', JSON.stringify(report, null, 2));
+fs.writeFileSync('audit.jsonl', fullAudit.jsonl);
 ```
 
 ## Best Practices
