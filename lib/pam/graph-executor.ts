@@ -383,49 +383,91 @@ function executeCombine(node: CombineNode, inputs: DecimalValue[]): DecimalValue
 }
 
 /**
- * Execute Controls node: Apply caps, floors, spike sharing
+ * Execute Controls node: Apply caps, floors, trigger bands, spike sharing
+ *
+ * Controls work on percentage deltas relative to a base price:
+ * - input[0]: Current adjusted price
+ * - input[1]: Base price (optional, defaults to input[0] if not provided)
+ *
+ * Execution order:
+ * 1. Calculate percentage delta: (currentPrice - basePrice) / basePrice * 100
+ * 2. Apply trigger band (suppress small deltas within band)
+ * 3. Apply spike sharing (share portion of large deltas)
+ * 4. Apply caps and floors (hard limits on delta)
+ * 5. Convert back to absolute price: basePrice * (1 + delta/100)
  */
 function executeControls(node: ControlsNode, inputs: DecimalValue[]): DecimalValue {
-  if (inputs.length !== 1) {
-    throw new Error(`Controls node ${node.id}: Expected 1 input, got ${inputs.length}`);
+  if (inputs.length < 1 || inputs.length > 2) {
+    throw new Error(`Controls node ${node.id}: Expected 1-2 inputs, got ${inputs.length}`);
   }
 
-  let value = inputs[0];
+  const currentPrice = inputs[0];
+  const basePrice = inputs.length === 2 ? inputs[1] : currentPrice;
   const config = node.config;
 
-  // Apply trigger band and spike sharing if configured
+  // If base price is zero, return current price (no controls applied)
+  if (basePrice.isZero()) {
+    return currentPrice;
+  }
+
+  // Calculate percentage delta: (current - base) / base * 100
+  let delta = currentPrice
+    .minus(basePrice)
+    .dividedBy(basePrice)
+    .multipliedBy(D(100));
+
+  // 1. Apply trigger band (suppress deltas within band)
+  if (config.triggerBand) {
+    const lower = D(config.triggerBand.lower);
+    const upper = D(config.triggerBand.upper);
+
+    // If delta is within trigger band, suppress it (set to 0)
+    if (delta.greaterThanOrEqualTo(lower) && delta.lessThanOrEqualTo(upper)) {
+      delta = D(0);
+    }
+  }
+
+  // 2. Apply spike sharing (share portion of spikes outside trigger band)
   if (config.triggerBand && config.spikeSharing) {
     const lower = D(config.triggerBand.lower);
     const upper = D(config.triggerBand.upper);
     const sharePercent = D(config.spikeSharing.sharePercent).dividedBy(100);
-
     const direction = config.spikeSharing.direction;
 
-    if ((direction === 'above' || direction === 'both') && value.greaterThan(upper)) {
-      // Spike above: Share portion of spike
-      const spike = subtract(value, upper);
-      const shared = multiply(spike, sharePercent);
-      value = add(upper, shared);
+    if ((direction === 'above' || direction === 'both') && delta.greaterThan(upper)) {
+      // Spike above upper band: Share portion of spike
+      const spike = delta.minus(upper);
+      const shared = spike.multipliedBy(sharePercent);
+      delta = upper.plus(shared);
     }
 
-    if ((direction === 'below' || direction === 'both') && value.lessThan(lower)) {
-      // Spike below: Share portion of spike
-      const spike = subtract(lower, value);
-      const shared = multiply(spike, sharePercent);
-      value = subtract(lower, shared);
+    if ((direction === 'below' || direction === 'both') && delta.lessThan(lower)) {
+      // Spike below lower band: Share portion of spike
+      const spike = lower.minus(delta);
+      const shared = spike.multipliedBy(sharePercent);
+      delta = lower.minus(shared);
     }
   }
 
-  // Apply cap and floor (collar)
-  if (config.cap !== undefined && config.floor !== undefined) {
-    value = clamp(value, D(config.floor), D(config.cap));
-  } else if (config.cap !== undefined) {
-    value = cap(value, D(config.cap));
-  } else if (config.floor !== undefined) {
-    value = applyFloor(value, D(config.floor));
+  // 3. Apply cap and floor (hard limits on delta percentage)
+  if (config.cap !== undefined) {
+    const capValue = D(config.cap);
+    if (delta.greaterThan(capValue)) {
+      delta = capValue;
+    }
   }
 
-  return value;
+  if (config.floor !== undefined) {
+    const floorValue = D(config.floor);
+    if (delta.lessThan(floorValue)) {
+      delta = floorValue;
+    }
+  }
+
+  // 4. Convert back to absolute price: basePrice * (1 + delta/100)
+  const adjustedPrice = basePrice.multipliedBy(D(1).plus(delta.dividedBy(100)));
+
+  return adjustedPrice;
 }
 
 // ============================================================================
