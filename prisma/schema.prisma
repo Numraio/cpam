@@ -460,16 +460,18 @@ model ApprovalEvent {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  tenantId   String // FK to Team.id
-  userId     String // FK to User.id
-  action     String // "CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "CALCULATE"
-  entityType String // "CONTRACT", "ITEM", "PAM", "CALC_BATCH"
-  entityId   String
-  changes    Json? // Store before/after state
-  ipAddress  String?
-  userAgent  String?  @db.Text
-  createdAt  DateTime @default(now())
+  id            String   @id @default(uuid())
+  tenantId      String // FK to Team.id
+  userId        String // FK to User.id
+  action        String // "CREATE", "UPDATE", "DELETE", "APPROVE", "REJECT", "CALCULATE", "OVERRIDE", "EXPORT", "IMPORT"
+  entityType    String // "CONTRACT", "ITEM", "PAM", "CALC_BATCH", "CALC_RESULT", "APPROVAL_EVENT"
+  entityId      String
+  correlationId String? // Groups related events (e.g., all events in a batch calculation)
+  changes       Json? // Store before/after state (PII-masked)
+  metadata      Json? // Additional context
+  ipAddress     String?
+  userAgent     String?  @db.Text
+  createdAt     DateTime @default(now())
 
   // Relations
   tenant Team @relation("AuditLogTenant", fields: [tenantId], references: [id], onDelete: Cascade)
@@ -477,6 +479,8 @@ model AuditLog {
   @@index([tenantId])
   @@index([userId])
   @@index([entityType, entityId])
+  @@index([correlationId])
   @@index([createdAt])
   @@index([tenantId, createdAt])
+  @@index([action])
 }
