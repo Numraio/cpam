@@ -95,6 +95,7 @@ model Team {
   calcResults    CalcResult[]    @relation("CalcResultTenant")
   approvalEvents ApprovalEvent[] @relation("ApprovalEventTenant")
   auditLogs      AuditLog[]      @relation("AuditLogTenant")
+  proposals      Proposal[]      @relation("ProposalTenant")
 
   @@index([billingId])
 }
@@ -391,9 +392,11 @@ model CalcBatch {
   updatedAt   DateTime   @updatedAt
 
   // Relations
-  tenant  Team         @relation("CalcBatchTenant", fields: [tenantId], references: [id], onDelete: Cascade)
-  pam     PAM          @relation(fields: [pamId], references: [id], onDelete: Cascade)
-  results CalcResult[]
+  tenant                Team         @relation("CalcBatchTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  pam                   PAM          @relation(fields: [pamId], references: [id], onDelete: Cascade)
+  results               CalcResult[]
+  proposalsAsOriginal   Proposal[]   @relation("ProposalOriginalBatch")
+  proposalsAsProposal   Proposal[]   @relation("ProposalProposalBatch")
 
   @@index([tenantId])
   @@index([pamId])
@@ -483,4 +486,54 @@ model AuditLog {
   @@index([createdAt])
   @@index([tenantId, createdAt])
   @@index([action])
+}
+
+enum ProposalStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProposalType {
+  CREDIT // Customer owes us money (price went up)
+  DEBIT  // We owe customer money (price went down)
+}
+
+model Proposal {
+  id                    String         @id @default(uuid())
+  tenantId              String
+  originalBatchId       String // FK to CalcBatch.id
+  proposalBatchId       String? // FK to CalcBatch.id (recalculation with revised data)
+  type                  ProposalType
+  status                ProposalStatus @default(DRAFT)
+  reason                String         @db.Text // Why was this proposal created? (e.g., "OANDA revised WTI prices for 2024-10-15")
+  revisionDescription   String?        @db.Text // Details about what data was revised
+  totalDelta            Decimal        @db.Decimal(20, 12) // Sum of all price deltas
+  deltaCurrency         String         @db.VarChar(3)
+  affectedItemCount     Int // How many items are affected
+  affectedItemIds       Json // Array of item IDs affected
+  deltas                Json // Array of { itemId, originalPrice, revisedPrice, delta }
+
+  // Approval tracking
+  requestedBy           String
+  requestedAt           DateTime       @default(now())
+  reviewedBy            String?
+  reviewedAt            DateTime?
+  comments              String?        @db.Text
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  // Relations
+  tenant         Team       @relation("ProposalTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  originalBatch  CalcBatch  @relation("ProposalOriginalBatch", fields: [originalBatchId], references: [id], onDelete: Cascade)
+  proposalBatch  CalcBatch? @relation("ProposalProposalBatch", fields: [proposalBatchId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([originalBatchId])
+  @@index([proposalBatchId])
+  @@index([status])
+  @@index([type])
+  @@index([requestedAt])
 }
