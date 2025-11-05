@@ -1,0 +1,4 @@
+name,description,status
+"Brent-linked PAM","Pricing linked to Brent crude 30-day average",ACTIVE
+"Euro FX PAM","EUR to USD conversion with quality adjustment",DRAFT
+"Fixed Premium PAM","Base price plus fixed $5 premium",ACTIVE

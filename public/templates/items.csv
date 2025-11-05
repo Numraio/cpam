@@ -1,0 +1,4 @@
+contractName,pamName,sku,name,basePrice,baseCurrency,uom,description
+"Q4 2024 Oil Contract","Brent-linked PAM","OIL-001","Crude Oil Brent",75.50,USD,bbl,"Brent crude oil"
+"Q4 2024 Oil Contract","Brent-linked PAM","OIL-002","Crude Oil WTI",72.30,USD,bbl,"West Texas Intermediate crude oil"
+"EU Supply Agreement","Euro FX PAM","DIESEL-001","Diesel Fuel",1.45,EUR,L,"Ultra-low sulfur diesel"
