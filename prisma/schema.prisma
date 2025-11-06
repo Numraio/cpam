@@ -86,16 +86,17 @@ model Team {
   apiKeys     ApiKey[]
 
   // CPAM relations
-  contracts      Contract[]      @relation("ContractTenant")
-  items          Item[]          @relation("ItemTenant")
-  pams           PAM[]           @relation("PAMTenant")
-  indexSeries    IndexSeries[]   @relation("IndexSeriesTenant")
-  indexValues    IndexValue[]    @relation("IndexValueTenant")
-  calcBatches    CalcBatch[]     @relation("CalcBatchTenant")
-  calcResults    CalcResult[]    @relation("CalcResultTenant")
-  approvalEvents ApprovalEvent[] @relation("ApprovalEventTenant")
-  auditLogs      AuditLog[]      @relation("AuditLogTenant")
-  proposals      Proposal[]      @relation("ProposalTenant")
+  contracts           Contract[]           @relation("ContractTenant")
+  items               Item[]               @relation("ItemTenant")
+  pams                PAM[]                @relation("PAMTenant")
+  indexSeries         IndexSeries[]        @relation("IndexSeriesTenant")
+  indexValues         IndexValue[]         @relation("IndexValueTenant")
+  calcBatches         CalcBatch[]          @relation("CalcBatchTenant")
+  calcResults         CalcResult[]         @relation("CalcResultTenant")
+  approvalEvents      ApprovalEvent[]      @relation("ApprovalEventTenant")
+  auditLogs           AuditLog[]           @relation("AuditLogTenant")
+  proposals           Proposal[]           @relation("ProposalTenant")
+  providerCredentials ProviderCredential[] @relation("ProviderCredentialTenant")
 
   @@index([billingId])
 }
@@ -536,4 +537,31 @@ model Proposal {
   @@index([status])
   @@index([type])
   @@index([requestedAt])
+}
+
+model ProviderCredential {
+  id          String    @id @default(uuid())
+  tenantId    String // FK to Team.id
+  provider    String // "PLATTS", "OANDA", "ARGUS", etc.
+  name        String // User-friendly name for this credential
+  description String?   @db.Text
+
+  // Encrypted credential data (using envelope encryption)
+  encryptedData String  @db.Text // JSON blob of EncryptedEnvelope
+
+  // Metadata
+  createdBy     String // FK to User.id
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastUsedAt    DateTime? // Track when credential was last used
+  lastRotatedAt DateTime? // Track last rotation
+  expiresAt     DateTime? // Optional expiration date
+
+  // Relations
+  tenant Team @relation("ProviderCredentialTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, provider, name])
+  @@index([tenantId])
+  @@index([provider])
+  @@index([tenantId, provider])
 }
