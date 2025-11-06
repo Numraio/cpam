@@ -290,18 +290,19 @@ model Contract {
 }
 
 model Item {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   tenantId     String // FK to Team.id
   contractId   String
   sku          String // Product SKU or identifier
   name         String
-  description  String?  @db.Text
-  basePrice    Decimal  @db.Decimal(20, 12) // 12 decimal places for financial precision
-  baseCurrency String   @db.VarChar(3) // ISO 4217 currency code
+  description  String?   @db.Text
+  basePrice    Decimal   @db.Decimal(20, 12) // 12 decimal places for financial precision
+  baseCurrency String    @db.VarChar(3) // ISO 4217 currency code
   uom          String // Unit of measure (kg, lb, MT, etc.)
   pamId        String? // Optional: link to PAM for this item
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  fxPolicy     FXPolicy? @default(PERIOD_AVG) // FX rate policy
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
   tenant   Team         @relation("ItemTenant", fields: [tenantId], references: [id], onDelete: Cascade)
@@ -499,6 +500,12 @@ enum ProposalStatus {
 enum ProposalType {
   CREDIT // Customer owes us money (price went up)
   DEBIT  // We owe customer money (price went down)
+}
+
+enum FXPolicy {
+  PERIOD_AVG      // Average FX rate over calculation period
+  EOP             // End-of-period rate (last business day)
+  EFFECTIVE_DATE  // Rate on specific effective date
 }
 
 model Proposal {
