@@ -21,7 +21,7 @@
  */
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/lib/auth';
+import { getSession } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import { exportAuditLogsAsJSONL } from '@/lib/audit/audit-export';
 

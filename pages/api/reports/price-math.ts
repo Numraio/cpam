@@ -7,7 +7,7 @@
  */
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/lib/auth';
+import { getSession } from '@/lib/authz';
 import { prisma } from '@/lib/prisma';
 import {
   fetchReportData,
