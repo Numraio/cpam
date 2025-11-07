@@ -1,0 +1,385 @@
+# Synthetic Monitoring Checks
+# Proactive health checks to detect issues before users
+
+# Blackbox Exporter configuration for Prometheus
+# Run synthetic checks from multiple locations
+
+modules:
+  # HTTP probe for API endpoints
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      preferred_ip_protocol: "ip4"
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+
+  # HTTP probe with basic auth
+  http_auth:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200]
+      method: GET
+      basic_auth:
+        username: ${MONITOR_USERNAME}
+        password: ${MONITOR_PASSWORD}
+
+  # HTTP POST probe for API testing
+  http_post_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_status_codes: [200, 201]
+      method: POST
+      headers:
+        Content-Type: application/json
+        Authorization: Bearer ${MONITOR_API_TOKEN}
+      body: '{}'
+
+  # DNS probe
+  dns_check:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: api.cpam.example.com
+      query_type: A
+
+  # TCP probe for database
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+
+---
+# Prometheus configuration for synthetic checks
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  # Blackbox exporter
+  - job_name: 'blackbox'
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - 'blackbox-exporter:9115'
+
+  # API health checks
+  - job_name: 'api-health'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://api.cpam.example.com/health
+        - https://api.cpam.example.com/api/health
+        labels:
+          environment: production
+          service: api
+          check_type: health
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # API endpoint checks (authenticated)
+  - job_name: 'api-endpoints'
+    metrics_path: /probe
+    params:
+      module: [http_auth]
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+        - https://api.cpam.example.com/api/items
+        - https://api.cpam.example.com/api/calculations
+        - https://api.cpam.example.com/api/scenarios
+        labels:
+          environment: production
+          service: api
+          check_type: endpoint
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Metrics endpoint check
+  - job_name: 'metrics-endpoint'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+        - https://api.cpam.example.com/api/metrics
+        labels:
+          environment: production
+          service: metrics
+          check_type: endpoint
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # DNS checks
+  - job_name: 'dns-checks'
+    metrics_path: /probe
+    params:
+      module: [dns_check]
+    static_configs:
+      - targets:
+        - api.cpam.example.com
+        - www.cpam.example.com
+        labels:
+          environment: production
+          check_type: dns
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # SSL certificate expiry checks
+  - job_name: 'ssl-expiry'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    scrape_interval: 3600s  # Check hourly
+    static_configs:
+      - targets:
+        - https://api.cpam.example.com
+        - https://www.cpam.example.com
+        labels:
+          environment: production
+          check_type: ssl
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+---
+# Alerting rules for synthetic checks
+
+groups:
+  - name: synthetic_checks
+    interval: 30s
+    rules:
+      # Health check failed
+      - alert: HealthCheckFailed
+        expr: probe_success{check_type="health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check failed for {{ $labels.instance }}"
+          description: "Synthetic health check has been failing for 2 minutes"
+          runbook: "https://docs.example.com/runbooks/health-check-failed"
+
+      # Endpoint check failed
+      - alert: EndpointCheckFailed
+        expr: probe_success{check_type="endpoint"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Endpoint check failed for {{ $labels.instance }}"
+          description: "API endpoint {{ $labels.instance }} is not responding correctly"
+
+      # High response time
+      - alert: EndpointSlowResponse
+        expr: probe_duration_seconds{check_type="health"} > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response from {{ $labels.instance }}"
+          description: "Health check response time is {{ $value }}s (> 1s)"
+
+      # SSL certificate expiring
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry{check_type="ssl"} - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon for {{ $labels.instance }}"
+          description: "SSL certificate expires in {{ $value | humanizeDuration }}"
+
+      # SSL certificate expired
+      - alert: SSLCertificateExpired
+        expr: probe_ssl_earliest_cert_expiry{check_type="ssl"} - time() < 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SSL certificate expired for {{ $labels.instance }}"
+          description: "SSL certificate has expired"
+
+      # DNS resolution failed
+      - alert: DNSResolutionFailed
+        expr: probe_success{check_type="dns"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DNS resolution failed for {{ $labels.instance }}"
+          description: "Cannot resolve DNS for {{ $labels.instance }}"
+
+---
+# End-to-End Test Script
+# Run periodically to test critical user journeys
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cpam-e2e-tests
+  namespace: monitoring
+spec:
+  # Run every 15 minutes
+  schedule: "*/15 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: e2e-tests
+            image: cpam/e2e-tests:latest
+            env:
+            - name: API_URL
+              value: "https://api.cpam.example.com"
+            - name: TEST_USER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: e2e-test-credentials
+                  key: email
+            - name: TEST_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: e2e-test-credentials
+                  key: password
+            - name: PROMETHEUS_PUSHGATEWAY
+              value: "http://pushgateway:9091"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/sh
+              set -e
+
+              echo "Starting E2E tests..."
+
+              # Test 1: User login
+              echo "Test 1: User login"
+              response=$(curl -s -w "\n%{http_code}" -X POST \
+                "${API_URL}/api/auth/signin" \
+                -H "Content-Type: application/json" \
+                -d "{\"email\":\"${TEST_USER_EMAIL}\",\"password\":\"${TEST_USER_PASSWORD}\"}")
+
+              status=$(echo "$response" | tail -n1)
+              if [ "$status" != "200" ]; then
+                echo "Login failed with status $status"
+                echo "e2e_test_success{test=\"login\"} 0" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+                exit 1
+              fi
+              echo "e2e_test_success{test=\"login\"} 1" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+              echo "Login successful"
+
+              # Extract session token
+              token=$(echo "$response" | head -n-1 | jq -r '.token')
+
+              # Test 2: List items
+              echo "Test 2: List items"
+              response=$(curl -s -w "\n%{http_code}" \
+                "${API_URL}/api/items" \
+                -H "Authorization: Bearer ${token}")
+
+              status=$(echo "$response" | tail -n1)
+              if [ "$status" != "200" ]; then
+                echo "List items failed with status $status"
+                echo "e2e_test_success{test=\"list_items\"} 0" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+                exit 1
+              fi
+              echo "e2e_test_success{test=\"list_items\"} 1" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+              echo "List items successful"
+
+              # Test 3: Create calculation
+              echo "Test 3: Create calculation"
+              response=$(curl -s -w "\n%{http_code}" -X POST \
+                "${API_URL}/api/calculations" \
+                -H "Authorization: Bearer ${token}" \
+                -H "Content-Type: application/json" \
+                -d '{"name":"E2E Test Calculation"}')
+
+              status=$(echo "$response" | tail -n1)
+              if [ "$status" != "201" ]; then
+                echo "Create calculation failed with status $status"
+                echo "e2e_test_success{test=\"create_calculation\"} 0" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+                exit 1
+              fi
+              echo "e2e_test_success{test=\"create_calculation\"} 1" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+              echo "Create calculation successful"
+
+              # Test 4: Check metrics endpoint
+              echo "Test 4: Check metrics endpoint"
+              response=$(curl -s -w "\n%{http_code}" "${API_URL}/api/metrics")
+
+              status=$(echo "$response" | tail -n1)
+              if [ "$status" != "200" ]; then
+                echo "Metrics endpoint failed with status $status"
+                echo "e2e_test_success{test=\"metrics\"} 0" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+                exit 1
+              fi
+              echo "e2e_test_success{test=\"metrics\"} 1" | curl --data-binary @- ${PROMETHEUS_PUSHGATEWAY}/metrics/job/e2e_tests
+              echo "Metrics endpoint successful"
+
+              echo "All E2E tests passed!"
+          restartPolicy: OnFailure
+
+---
+# Alert for E2E test failures
+
+groups:
+  - name: e2e_tests
+    interval: 1m
+    rules:
+      - alert: E2ETestsFailing
+        expr: e2e_test_success == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "E2E test {{ $labels.test }} is failing"
+          description: "Synthetic E2E test has been failing for 15 minutes"
+          runbook: "https://docs.example.com/runbooks/e2e-test-failed"
+
+      - alert: E2ETestsNotRunning
+        expr: absent(e2e_test_success)
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "E2E tests have not run recently"
+          description: "No E2E test metrics received in 30 minutes"

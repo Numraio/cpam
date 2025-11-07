@@ -1,0 +1,300 @@
+# Prometheus Alerting Rules
+# Based on SLO definitions with burn-rate detection
+
+groups:
+  # API Service Alerts
+  - name: api_service
+    interval: 30s
+    rules:
+      # Availability - Fast Burn
+      - alert: APIErrorBudgetBurnRateCritical
+        expr: |
+          (
+            sum(rate(api_errors_total[1h])) /
+            sum(rate(api_requests_total[1h]))
+          ) > (1 - 0.999) * 14.4
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+          slo: availability
+        annotations:
+          summary: "API error budget burning at critical rate"
+          description: "Burning 1% of monthly error budget per hour ({{ $value | humanizePercentage }} error rate)"
+          runbook: "https://docs.example.com/runbooks/api-error-rate-high"
+
+      # Availability - Moderate Burn
+      - alert: APIErrorBudgetBurnRateWarning
+        expr: |
+          (
+            sum(rate(api_errors_total[6h])) /
+            sum(rate(api_requests_total[6h]))
+          ) > (1 - 0.999) * 6
+        for: 15m
+        labels:
+          severity: warning
+          service: api
+          slo: availability
+        annotations:
+          summary: "API error budget burning at elevated rate"
+          description: "Burning 5% of monthly error budget in 6 hours ({{ $value | humanizePercentage }} error rate)"
+          runbook: "https://docs.example.com/runbooks/api-error-rate-elevated"
+
+      # Latency - Critical
+      - alert: APILatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(api_latency_seconds_bucket[5m])) by (le)
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+          slo: latency
+        annotations:
+          summary: "API p95 latency exceeds 1000ms"
+          description: "p95 latency is {{ $value | humanizeDuration }} (target: 500ms)"
+          runbook: "https://docs.example.com/runbooks/api-latency-high"
+
+      # Latency - Warning
+      - alert: APILatencyElevated
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(api_latency_seconds_bucket[15m])) by (le)
+          ) > 0.75
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+          slo: latency
+        annotations:
+          summary: "API p95 latency elevated"
+          description: "p95 latency is {{ $value | humanizeDuration }} (target: 500ms)"
+
+  # Calculation Service Alerts
+  - name: calc_service
+    interval: 30s
+    rules:
+      # Availability - Fast Burn
+      - alert: CalcErrorBudgetBurnRateCritical
+        expr: |
+          (
+            sum(rate(cpam_calc_batch_total{status="failed"}[1h])) /
+            sum(rate(cpam_calc_batch_total[1h]))
+          ) > (1 - 0.995) * 10
+        for: 5m
+        labels:
+          severity: critical
+          service: calculation
+          slo: availability
+        annotations:
+          summary: "Calculation error budget burning critically"
+          description: "{{ $value | humanizePercentage }} of calculations failing"
+          runbook: "https://docs.example.com/runbooks/calc-failure-rate-high"
+
+      # Performance - Critical
+      - alert: CalcRuntimeExceeded
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(calc_runtime_seconds_bucket{item_count_bucket="1001-10000"}[5m])) by (le)
+          ) > 600
+        for: 10m
+        labels:
+          severity: critical
+          service: calculation
+          slo: performance
+        annotations:
+          summary: "Calculation runtime exceeds 10 minutes (p95)"
+          description: "p95 runtime is {{ $value | humanizeDuration }} for 10k items (target: 5 minutes)"
+          runbook: "https://docs.example.com/runbooks/calc-runtime-slow"
+
+      # Performance - Warning
+      - alert: CalcRuntimeElevated
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(calc_runtime_seconds_bucket{item_count_bucket="1001-10000"}[15m])) by (le)
+          ) > 450
+        for: 15m
+        labels:
+          severity: warning
+          service: calculation
+          slo: performance
+        annotations:
+          summary: "Calculation runtime elevated"
+          description: "p95 runtime is {{ $value | humanizeDuration }} for 10k items (target: 5 minutes)"
+
+  # Ingestion Service Alerts
+  - name: ingestion_service
+    interval: 30s
+    rules:
+      # Data Freshness - Critical
+      - alert: IngestionLagCritical
+        expr: cpam_ingestion_lag_seconds > 7200
+        for: 10m
+        labels:
+          severity: critical
+          service: ingestion
+          slo: data_freshness
+        annotations:
+          summary: "Ingestion lag exceeds 2 hours"
+          description: "Data is {{ $value | humanizeDuration }} behind (target: < 1 hour)"
+          runbook: "https://docs.example.com/runbooks/ingestion-lag-high"
+
+      # Data Freshness - Warning
+      - alert: IngestionLagElevated
+        expr: cpam_ingestion_lag_seconds > 5400
+        for: 15m
+        labels:
+          severity: warning
+          service: ingestion
+          slo: data_freshness
+        annotations:
+          summary: "Ingestion lag elevated"
+          description: "Data is {{ $value | humanizeDuration }} behind (target: < 1 hour)"
+
+      # Ingestion Failure Rate
+      - alert: IngestionFailureRateHigh
+        expr: |
+          (
+            sum(rate(ingestion_total{status="failure"}[30m])) /
+            sum(rate(ingestion_total[30m]))
+          ) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+          service: ingestion
+          slo: availability
+        annotations:
+          summary: "Ingestion failure rate exceeds 5%"
+          description: "{{ $value | humanizePercentage }} of ingestion operations failing"
+          runbook: "https://docs.example.com/runbooks/ingestion-failures"
+
+  # Queue Service Alerts
+  - name: queue_service
+    interval: 30s
+    rules:
+      # Queue Depth - Critical
+      - alert: QueueDepthCritical
+        expr: cpam_queue_depth{status="total"} > 5000
+        for: 5m
+        labels:
+          severity: critical
+          service: queue
+          slo: capacity
+        annotations:
+          summary: "Queue depth critically high"
+          description: "{{ $value }} jobs in queue (threshold: 5000)"
+          runbook: "https://docs.example.com/runbooks/queue-depth-high"
+
+      # Queue Depth - Warning
+      - alert: QueueDepthHigh
+        expr: cpam_queue_depth{status="total"} > 1000
+        for: 15m
+        labels:
+          severity: warning
+          service: queue
+          slo: capacity
+        annotations:
+          summary: "Queue depth elevated"
+          description: "{{ $value }} jobs in queue (threshold: 1000)"
+          runbook: "https://docs.example.com/runbooks/queue-depth-elevated"
+
+      # Processing Rate Low
+      - alert: QueueProcessingRateLow
+        expr: |
+          sum(rate(cpam_calc_batch_total{status="completed"}[1h])) * 3600 < 50
+        for: 30m
+        labels:
+          severity: warning
+          service: queue
+          slo: processing_rate
+        annotations:
+          summary: "Queue processing rate below target"
+          description: "Processing {{ $value }} batches/hour (target: 100)"
+          runbook: "https://docs.example.com/runbooks/processing-rate-low"
+
+  # Data Quality Alerts
+  - name: data_quality
+    interval: 5m
+    rules:
+      # Data Quality Degraded
+      - alert: DataQualityDegraded
+        expr: |
+          sum(rate(ingestion_data_quality[1h])) < 0.90
+        for: 30m
+        labels:
+          severity: warning
+          service: ingestion
+          slo: data_quality
+        annotations:
+          summary: "Data quality below 90%"
+          description: "Only {{ $value | humanizePercentage }} of fetched data successfully upserted"
+          runbook: "https://docs.example.com/runbooks/data-quality-low"
+
+  # Platform Health Alerts
+  - name: platform_health
+    interval: 30s
+    rules:
+      # Service Down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service has been down for 2 minutes"
+          runbook: "https://docs.example.com/runbooks/service-down"
+
+      # High Error Rate (generic)
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(api_errors_total[5m])) by (method, path) /
+          sum(rate(api_requests_total[5m])) by (method, path) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.method }} {{ $labels.path }}"
+          description: "{{ $value | humanizePercentage }} error rate"
+          runbook: "https://docs.example.com/runbooks/endpoint-errors"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          sum(rate(db_connection_errors_total[5m])) > 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool exhausted"
+          description: "{{ $value }} connection errors per second"
+          runbook: "https://docs.example.com/runbooks/db-connection-pool"
+
+  # Tenant-Specific Alerts
+  - name: tenant_health
+    interval: 1m
+    rules:
+      # Tenant Exceeding Usage Limits
+      - alert: TenantNearUsageLimit
+        expr: |
+          (cpam_items_total / on(tenant_id) group_left cpam_tenants_usage_limit) > 0.9
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "Tenant {{ $labels.tenant_id }} near usage limit"
+          description: "Tenant at {{ $value | humanizePercentage }} of item limit"
+
+      # Inactive Tenant with High Resource Usage
+      - alert: InactiveTenantHighUsage
+        expr: |
+          cpam_items_total > 1000
+          and
+          cpam_tenants_active == 0
+        for: 7d
+        labels:
+          severity: info
+        annotations:
+          summary: "Inactive tenant {{ $labels.tenant_id }} consuming resources"
+          description: "Tenant has {{ $value }} items but no activity in 7 days"

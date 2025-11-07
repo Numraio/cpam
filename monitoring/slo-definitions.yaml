@@ -1,0 +1,195 @@
+# SLO Definitions
+# Service Level Objectives with error budgets and burn-rate policies
+
+# API Service SLOs
+api_service:
+  availability:
+    target: 99.9  # 99.9% availability
+    window: 30d   # 30-day rolling window
+    error_budget: 43.2m  # 43.2 minutes of downtime per month
+
+    indicators:
+      - name: request_success_rate
+        query: |
+          sum(rate(api_requests_total{status_code!~"5.."}[5m])) /
+          sum(rate(api_requests_total[5m]))
+
+      - name: error_rate
+        query: |
+          sum(rate(api_errors_total[5m])) /
+          sum(rate(api_requests_total[5m]))
+
+    burn_rates:
+      # Fast burn (1% budget in 1 hour = 14.4x burn rate)
+      - severity: critical
+        threshold: 14.4
+        window: 1h
+        description: "Burning 1% of monthly error budget per hour"
+
+      # Moderate burn (5% budget in 6 hours = 6x burn rate)
+      - severity: warning
+        threshold: 6
+        window: 6h
+        description: "Burning 5% of monthly error budget in 6 hours"
+
+      # Slow burn (10% budget in 3 days = 1x burn rate)
+      - severity: info
+        threshold: 1
+        window: 3d
+        description: "Burning 10% of monthly error budget in 3 days"
+
+  latency:
+    target: 500ms  # p95 latency < 500ms
+    percentile: 95
+    window: 30d
+
+    indicators:
+      - name: api_latency_p95
+        query: |
+          histogram_quantile(0.95,
+            sum(rate(api_latency_seconds_bucket[5m])) by (le)
+          )
+
+    burn_rates:
+      - severity: critical
+        threshold: 2x  # p95 > 1000ms (2x target)
+        window: 5m
+
+      - severity: warning
+        threshold: 1.5x  # p95 > 750ms (1.5x target)
+        window: 15m
+
+# Calculation Service SLOs
+calc_service:
+  availability:
+    target: 99.5  # 99.5% availability
+    window: 30d
+    error_budget: 3.6h  # 3.6 hours per month
+
+    indicators:
+      - name: calc_success_rate
+        query: |
+          sum(rate(cpam_calc_batch_total{status="completed"}[5m])) /
+          sum(rate(cpam_calc_batch_total[5m]))
+
+    burn_rates:
+      - severity: critical
+        threshold: 10
+        window: 1h
+
+      - severity: warning
+        threshold: 5
+        window: 6h
+
+  performance:
+    target: 300s  # 5 minutes for 10k items (p95)
+    percentile: 95
+    window: 30d
+
+    indicators:
+      - name: calc_runtime_p95
+        query: |
+          histogram_quantile(0.95,
+            sum(rate(calc_runtime_seconds_bucket{item_count_bucket="1001-10000"}[5m])) by (le)
+          )
+
+    thresholds:
+      - severity: critical
+        threshold: 600s  # 10 minutes (2x target)
+
+      - severity: warning
+        threshold: 450s  # 7.5 minutes (1.5x target)
+
+# Ingestion Service SLOs
+ingestion_service:
+  availability:
+    target: 99.9
+    window: 30d
+    error_budget: 43.2m
+
+    indicators:
+      - name: ingestion_success_rate
+        query: |
+          sum(rate(ingestion_total{status="success"}[5m])) /
+          sum(rate(ingestion_total[5m]))
+
+  data_freshness:
+    target: 3600s  # Data < 1 hour old (p95)
+    percentile: 95
+    window: 30d
+
+    indicators:
+      - name: ingestion_lag_p95
+        query: |
+          histogram_quantile(0.95,
+            sum(rate(ingestion_lag_seconds_bucket[5m])) by (le)
+          )
+
+    thresholds:
+      - severity: critical
+        threshold: 7200s  # 2 hours
+
+      - severity: warning
+        threshold: 5400s  # 1.5 hours
+
+# Queue Service SLOs
+queue_service:
+  capacity:
+    target: 1000  # Queue depth < 1000 jobs
+    window: 30d
+
+    indicators:
+      - name: queue_depth
+        query: cpam_queue_depth{status="total"}
+
+    thresholds:
+      - severity: critical
+        threshold: 5000
+        duration: 5m
+
+      - severity: warning
+        threshold: 1000
+        duration: 15m
+
+  processing_rate:
+    target: 100  # Process at least 100 batches/hour
+    window: 1h
+
+    indicators:
+      - name: batch_processing_rate
+        query: |
+          sum(rate(cpam_calc_batch_total{status="completed"}[1h])) * 3600
+
+# Data Quality SLOs
+data_quality:
+  ingestion_quality:
+    target: 95  # 95% of fetched data successfully upserted
+    window: 30d
+
+    indicators:
+      - name: data_quality_ratio
+        query: |
+          sum(rate(ingestion_data_quality[5m]))
+
+    thresholds:
+      - severity: warning
+        threshold: 0.90  # 90%
+
+      - severity: info
+        threshold: 0.95  # 95%
+
+# Overall Platform SLO
+platform:
+  availability:
+    target: 99.9  # Overall platform availability
+    window: 30d
+    error_budget: 43.2m
+
+    # Composite SLO based on critical services
+    components:
+      - service: api_service
+        weight: 0.4
+      - service: calc_service
+        weight: 0.3
+      - service: ingestion_service
+        weight: 0.3
