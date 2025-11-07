@@ -102,6 +102,7 @@ model Team {
   auditLogs           AuditLog[]           @relation("AuditLogTenant")
   proposals           Proposal[]           @relation("ProposalTenant")
   providerCredentials ProviderCredential[] @relation("ProviderCredentialTenant")
+  scenarios           Scenario[]           @relation("ScenarioTenant")
 
   @@index([billingId])
 }
@@ -340,6 +341,7 @@ model PAM {
   tenant      Team        @relation("PAMTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   items       Item[]      @relation("ItemPAM")
   calcBatches CalcBatch[]
+  scenarios   Scenario[]  @relation("ScenarioPAM")
 
   @@index([tenantId])
   @@index([tenantId, name])
@@ -393,6 +395,7 @@ model CalcBatch {
   tenantId    String // FK to Team.id
   pamId       String
   contractId  String? // Optional: calculate for specific contract
+  scenarioId  String? // Optional: FK to Scenario.id - if this is a scenario calculation
   inputsHash  String // Hash of inputs for idempotency
   status      CalcStatus @default(QUEUED)
   startedAt   DateTime?
@@ -405,12 +408,14 @@ model CalcBatch {
   // Relations
   tenant                Team         @relation("CalcBatchTenant", fields: [tenantId], references: [id], onDelete: Cascade)
   pam                   PAM          @relation(fields: [pamId], references: [id], onDelete: Cascade)
+  scenario              Scenario?    @relation("ScenarioBatches", fields: [scenarioId], references: [id], onDelete: SetNull)
   results               CalcResult[]
   proposalsAsOriginal   Proposal[]   @relation("ProposalOriginalBatch")
   proposalsAsProposal   Proposal[]   @relation("ProposalProposalBatch")
 
   @@index([tenantId])
   @@index([pamId])
+  @@index([scenarioId])
   @@index([status])
   @@index([inputsHash])
 }
@@ -553,6 +558,35 @@ model Proposal {
   @@index([status])
   @@index([type])
   @@index([requestedAt])
+}
+
+model Scenario {
+  id          String   @id @default(uuid())
+  tenantId    String // FK to Team.id
+  name        String
+  description String?  @db.Text
+  pamId       String // FK to PAM.id - which PAM this scenario is based on
+  baselineId  String? // FK to CalcBatch.id - baseline to compare against (optional)
+
+  // Overrides - what inputs are being changed in this scenario
+  overrides   Json // { itemOverrides: { itemId: { property: value } }, indexOverrides: { seriesCode: { date: value } } }
+
+  // Published flag - scenarios are never published, but track if results have been approved
+  published   Boolean  @default(false) // Always false - scenarios don't affect production
+
+  // Metadata
+  createdBy   String // FK to User.id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant      Team       @relation("ScenarioTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  pam         PAM        @relation("ScenarioPAM", fields: [pamId], references: [id], onDelete: Cascade)
+  batches     CalcBatch[] @relation("ScenarioBatches")
+
+  @@index([tenantId])
+  @@index([pamId])
+  @@index([tenantId, name])
 }
 
 model ProviderCredential {
