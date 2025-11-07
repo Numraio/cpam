@@ -8,6 +8,7 @@ export const createStripeSubscription = async ({
   startDate,
   endDate,
   priceId,
+  maxItemsUnderManagement,
 }: {
   customerId: string;
   id: string;
@@ -15,6 +16,7 @@ export const createStripeSubscription = async ({
   startDate: Date;
   endDate: Date;
   priceId: string;
+  maxItemsUnderManagement?: number | null;
 }) => {
   return await prisma.subscription.create({
     data: {
@@ -24,6 +26,7 @@ export const createStripeSubscription = async ({
       startDate,
       endDate,
       priceId,
+      maxItemsUnderManagement,
     },
   });
 };

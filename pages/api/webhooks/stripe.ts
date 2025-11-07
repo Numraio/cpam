@@ -86,6 +86,7 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
     current_period_start,
     customer,
     items,
+    metadata,
   } = event.data.object as Stripe.Subscription;
 
   const subscription = await getBySubscriptionId(id);
@@ -98,6 +99,10 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
     }
   } else {
     const priceId = items.data.length > 0 ? items.data[0].plan?.id : '';
+
+    // Extract entitlements from metadata or price
+    const maxIuM = extractMaxIuM(metadata, priceId);
+
     //type Stripe.Subscription.Status = "active" | "canceled" | "incomplete" | "incomplete_expired" | "past_due" | "paused" | "trialing" | "unpaid"
     await updateStripeSubscription(id, {
       active: status === 'active',
@@ -109,13 +114,17 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
         : undefined,
       cancelAt: cancel_at ? new Date(cancel_at * 1000) : undefined,
       priceId,
+      maxItemsUnderManagement: maxIuM,
     });
   }
 }
 
 async function handleSubscriptionCreated(event: Stripe.Event) {
-  const { customer, id, current_period_start, current_period_end, items } =
+  const { customer, id, current_period_start, current_period_end, items, metadata } =
     event.data.object as Stripe.Subscription;
+
+  const priceId = items.data.length > 0 ? items.data[0].plan?.id : '';
+  const maxIuM = extractMaxIuM(metadata, priceId);
 
   await createStripeSubscription({
     customerId: customer as string,
@@ -124,6 +133,44 @@ async function handleSubscriptionCreated(event: Stripe.Event) {
     active: true,
     startDate: new Date(current_period_start * 1000),
     endDate: new Date(current_period_end * 1000),
-    priceId: items.data.length > 0 ? items.data[0].plan?.id : '',
+    priceId,
+    maxItemsUnderManagement: maxIuM,
   });
+}
+
+/**
+ * Extract max IuM from subscription metadata or price
+ *
+ * Priority:
+ * 1. subscription.metadata.maxItemsUnderManagement
+ * 2. Hardcoded price ID mappings
+ * 3. Default (100)
+ */
+function extractMaxIuM(
+  metadata: Stripe.Metadata | undefined,
+  priceId: string | undefined
+): number | null {
+  // Check metadata first
+  if (metadata?.maxItemsUnderManagement) {
+    const limit = parseInt(metadata.maxItemsUnderManagement, 10);
+    if (!isNaN(limit)) {
+      return limit === -1 ? null : limit; // -1 = unlimited
+    }
+  }
+
+  // Fallback to hardcoded price mappings (can be env vars)
+  const priceLimits: Record<string, number | null> = {
+    // Example price IDs (replace with actual Stripe price IDs)
+    'price_free': 100,
+    'price_starter': 1000,
+    'price_professional': 10000,
+    'price_enterprise': null, // unlimited
+  };
+
+  if (priceId && priceLimits[priceId] !== undefined) {
+    return priceLimits[priceId];
+  }
+
+  // Default
+  return 100;
 }

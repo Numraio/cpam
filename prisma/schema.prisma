@@ -77,6 +77,11 @@ model Team {
   defaultRole     Role     @default(MEMBER)
   billingId       String?
   billingProvider String?
+
+  // Usage tracking (cached, updated on item create/delete)
+  itemsUnderManagement Int @default(0) // Cached count for performance
+  usageLastUpdated     DateTime? // Last time usage was recalculated
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now())
 
@@ -168,6 +173,10 @@ model Subscription {
   startDate  DateTime
   endDate    DateTime
   cancelAt   DateTime?
+
+  // Entitlements
+  maxItemsUnderManagement Int? // Items under Management (IuM) limit, null = unlimited
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @default(now())
 
