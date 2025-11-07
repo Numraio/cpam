@@ -1,0 +1,552 @@
+# SOC2 Trust Services Criteria Control Matrix
+# Maps SOC2 controls to CPAM implementations, evidence, and responsibilities
+
+metadata:
+  version: "1.0"
+  last_updated: "2024-01-01"
+  audit_period: "2024-01-01 to 2024-12-31"
+  organization: "CPAM"
+  scope: "CPAM SaaS Platform"
+
+# CC - Common Criteria (foundational for all trust principles)
+common_criteria:
+  # CC1 - Control Environment
+  CC1.1:
+    control: "COSO Principle 1 - Organization demonstrates commitment to integrity and ethical values"
+    description: "The entity demonstrates a commitment to integrity and ethical values"
+    owner: "CEO"
+    implementation:
+      - "Code of Conduct documented and signed by all employees"
+      - "Ethics training mandatory for all employees (annual)"
+      - "Whistleblower policy established"
+    evidence:
+      - path: "compliance/evidence/code-of-conduct/"
+        type: "Policy document"
+        frequency: "Annual review"
+      - path: "compliance/evidence/ethics-training/"
+        type: "Training completion records"
+        frequency: "Annual"
+    testing_procedure: "Review code of conduct, verify employee acknowledgments, test whistleblower channel"
+    status: "Implemented"
+
+  CC1.2:
+    control: "COSO Principle 2 - Board independence and oversight"
+    description: "The board of directors demonstrates independence and exercises oversight"
+    owner: "Board of Directors"
+    implementation:
+      - "Independent board members (majority)"
+      - "Quarterly board meetings with security/compliance on agenda"
+      - "Audit committee established"
+    evidence:
+      - path: "compliance/evidence/board-meetings/"
+        type: "Meeting minutes"
+        frequency: "Quarterly"
+    testing_procedure: "Review board composition, meeting minutes, audit committee charter"
+    status: "Implemented"
+
+  CC1.3:
+    control: "COSO Principle 3 - Management structure and authority"
+    description: "Management establishes structures, reporting lines, and authorities"
+    owner: "CEO"
+    implementation:
+      - "Organizational chart maintained and published"
+      - "Role descriptions with authorities documented"
+      - "Segregation of duties matrix"
+    evidence:
+      - path: "compliance/evidence/org-structure/"
+        type: "Organizational chart, role descriptions"
+        frequency: "Annual or upon change"
+      - path: "lib/authz.ts"
+        type: "RBAC implementation"
+        frequency: "Continuous (version controlled)"
+    testing_procedure: "Review org chart, test RBAC controls, verify segregation of duties"
+    status: "Implemented"
+
+  CC1.4:
+    control: "COSO Principle 4 - Commitment to competence"
+    description: "The entity demonstrates commitment to attract, develop, and retain competent individuals"
+    owner: "Head of People"
+    implementation:
+      - "Job requirements define necessary competencies"
+      - "Onboarding program includes security and compliance training"
+      - "Annual performance reviews"
+      - "Continuing education budget"
+    evidence:
+      - path: "compliance/evidence/training-records/"
+        type: "Training completion, certifications"
+        frequency: "Ongoing"
+    testing_procedure: "Review hiring processes, training records, certifications"
+    status: "Implemented"
+
+  CC1.5:
+    control: "COSO Principle 5 - Accountability"
+    description: "The entity holds individuals accountable for internal control responsibilities"
+    owner: "All Management"
+    implementation:
+      - "Control owners assigned for each control"
+      - "Performance metrics include control effectiveness"
+      - "Quarterly control attestations by owners"
+    evidence:
+      - path: "compliance/soc2-control-matrix.yaml"
+        type: "Control matrix with owners"
+        frequency: "Continuous"
+      - path: "compliance/evidence/control-attestations/"
+        type: "Quarterly attestations"
+        frequency: "Quarterly"
+    testing_procedure: "Review control matrix, test attestation process"
+    status: "Implemented"
+
+  # CC2 - Communication and Information
+  CC2.1:
+    control: "Internal communication"
+    description: "The entity obtains or generates and uses relevant quality information"
+    owner: "CTO"
+    implementation:
+      - "Internal wiki with policies and procedures"
+      - "Regular all-hands meetings"
+      - "Slack channels for different teams"
+      - "Incident communication procedures"
+    evidence:
+      - path: "docs/"
+        type: "Documentation (version controlled)"
+        frequency: "Continuous"
+      - path: "compliance/evidence/communications/"
+        type: "Meeting notes, announcements"
+        frequency: "Ongoing"
+    testing_procedure: "Review communication channels, test incident communication"
+    status: "Implemented"
+
+  CC2.2:
+    control: "External communication"
+    description: "The entity communicates with external parties regarding matters affecting the control environment"
+    owner: "CEO"
+    implementation:
+      - "Status page for service availability (status.cpam.example.com)"
+      - "Security disclosure policy"
+      - "Terms of Service and Privacy Policy"
+      - "Customer communication during incidents"
+    evidence:
+      - path: "docs/slo-alerting.md"
+        type: "Status page procedures"
+        frequency: "Continuous"
+      - path: "compliance/policies/security-disclosure.md"
+        type: "Security policy"
+        frequency: "Annual review"
+    testing_procedure: "Review status page, test incident communication, verify policies published"
+    status: "Implemented"
+
+  # CC3 - Risk Assessment
+  CC3.1:
+    control: "Risk identification"
+    description: "The entity specifies objectives to enable identification of risks"
+    owner: "CTO / CISO"
+    implementation:
+      - "Annual risk assessment"
+      - "Threat modeling for new features"
+      - "Security review in development process"
+    evidence:
+      - path: "compliance/evidence/risk-assessments/"
+        type: "Risk assessment reports"
+        frequency: "Annual"
+      - path: "compliance/evidence/threat-models/"
+        type: "Threat models for features"
+        frequency: "Per feature"
+    testing_procedure: "Review risk assessment, verify threat modeling process"
+    status: "Implemented"
+
+  CC3.2:
+    control: "Risk analysis"
+    description: "The entity identifies and analyzes risk to the achievement of objectives"
+    owner: "CTO / CISO"
+    implementation:
+      - "Risk register maintained"
+      - "Risk scoring methodology (likelihood × impact)"
+      - "Quarterly risk review"
+    evidence:
+      - path: "compliance/evidence/risk-register.yaml"
+        type: "Risk register"
+        frequency: "Quarterly updates"
+    testing_procedure: "Review risk register, verify risk analysis methodology"
+    status: "Implemented"
+
+  CC3.3:
+    control: "Fraud risk assessment"
+    description: "The entity considers the potential for fraud in assessing risks"
+    owner: "CFO / CISO"
+    implementation:
+      - "Fraud risk scenarios documented"
+      - "Anti-fraud controls implemented (RBAC, audit logging)"
+      - "Anomaly detection in billing and usage"
+    evidence:
+      - path: "compliance/evidence/fraud-assessment.md"
+        type: "Fraud risk assessment"
+        frequency: "Annual"
+      - path: "lib/billing/usage-service.ts"
+        type: "Usage validation code"
+        frequency: "Continuous"
+    testing_procedure: "Review fraud scenarios, test anti-fraud controls"
+    status: "Implemented"
+
+  CC3.4:
+    control: "Risk response"
+    description: "The entity responds to identified risks"
+    owner: "CTO / CISO"
+    implementation:
+      - "Risk treatment plans for high/critical risks"
+      - "Acceptance documentation for accepted risks"
+      - "Regular follow-up on risk remediation"
+    evidence:
+      - path: "compliance/evidence/risk-treatment-plans/"
+        type: "Treatment plans and status"
+        frequency: "Quarterly"
+    testing_procedure: "Review treatment plans, verify remediation status"
+    status: "Implemented"
+
+  # CC4 - Monitoring Activities
+  CC4.1:
+    control: "Ongoing and separate evaluations"
+    description: "The entity selects, develops, and performs ongoing and/or separate evaluations"
+    owner: "CTO / CISO"
+    implementation:
+      - "Continuous monitoring via Prometheus/Grafana"
+      - "Quarterly internal control reviews"
+      - "Annual SOC2 audit"
+      - "Penetration testing (annual)"
+    evidence:
+      - path: "monitoring/"
+        type: "Monitoring configuration"
+        frequency: "Continuous"
+      - path: "compliance/evidence/internal-reviews/"
+        type: "Review reports"
+        frequency: "Quarterly"
+      - path: "compliance/evidence/pen-tests/"
+        type: "Pen-test reports"
+        frequency: "Annual"
+    testing_procedure: "Review monitoring dashboards, test alerting, review audit reports"
+    status: "Implemented"
+
+  CC4.2:
+    control: "Deficiency evaluation and communication"
+    description: "The entity evaluates and communicates control deficiencies"
+    owner: "CTO / CISO"
+    implementation:
+      - "Deficiency tracking in issue tracker (GitHub Issues)"
+      - "Severity classification (Critical, High, Medium, Low)"
+      - "SLA for remediation based on severity"
+      - "Board reporting for critical issues"
+    evidence:
+      - path: "compliance/evidence/deficiency-log/"
+        type: "Deficiency tracking"
+        frequency: "Ongoing"
+    testing_procedure: "Review deficiency log, verify remediation SLAs met"
+    status: "Implemented"
+
+  # CC5 - Control Activities
+  CC5.1:
+    control: "Selection and development of control activities"
+    description: "The entity selects and develops control activities that mitigate risks"
+    owner: "CTO / CISO"
+    implementation:
+      - "Controls mapped to risks"
+      - "Preventive and detective controls implemented"
+      - "Automated controls where possible"
+    evidence:
+      - path: "compliance/soc2-control-matrix.yaml"
+        type: "This control matrix"
+        frequency: "Continuous"
+    testing_procedure: "Review control matrix, test control effectiveness"
+    status: "Implemented"
+
+  CC5.2:
+    control: "Technology controls"
+    description: "The entity selects and develops general IT controls"
+    owner: "CTO"
+    implementation:
+      - "Access controls (authentication, authorization)"
+      - "Change management process"
+      - "Backup and recovery procedures"
+      - "Monitoring and logging"
+    evidence:
+      - path: "lib/nextAuth.ts"
+        type: "Authentication implementation"
+        frequency: "Continuous"
+      - path: "backup/"
+        type: "Backup procedures"
+        frequency: "Continuous"
+      - path: ".github/workflows/"
+        type: "CI/CD pipelines"
+        frequency: "Continuous"
+    testing_procedure: "Test access controls, review change logs, verify backups"
+    status: "Implemented"
+
+  CC5.3:
+    control: "Policy and procedure deployment"
+    description: "The entity deploys control activities through policies and procedures"
+    owner: "All Control Owners"
+    implementation:
+      - "Policies documented and version controlled"
+      - "Procedures operationalized in runbooks"
+      - "Training on policies and procedures"
+    evidence:
+      - path: "docs/"
+        type: "Policies and procedures"
+        frequency: "Continuous (Git)"
+      - path: "docs/adr/runbooks/"
+        type: "Operational runbooks"
+        frequency: "Continuous"
+    testing_procedure: "Review documentation, verify procedures followed"
+    status: "Implemented"
+
+# A - Availability
+availability:
+  A1.1:
+    control: "Availability commitments"
+    description: "The entity maintains service availability commitments to customers"
+    owner: "CTO"
+    implementation:
+      - "SLO of 99.9% uptime documented"
+      - "SLA in customer contracts"
+      - "Monitoring and alerting for availability"
+    evidence:
+      - path: "docs/slo-alerting.md"
+        type: "SLO documentation"
+        frequency: "Continuous"
+      - path: "monitoring/prometheus-alerts.yaml"
+        type: "Availability alerts"
+        frequency: "Continuous"
+      - path: "grafana/dashboards/slo-dashboard.json"
+        type: "Availability dashboard"
+        frequency: "Continuous"
+    testing_procedure: "Review SLOs, test monitoring, verify uptime reports"
+    status: "Implemented"
+
+  A1.2:
+    control: "Disaster recovery and business continuity"
+    description: "The entity implements disaster recovery and business continuity plans"
+    owner: "CTO"
+    implementation:
+      - "DR plan with RPO ≤15min, RTO ≤4h"
+      - "Automated backups with PITR"
+      - "Cross-region replication"
+      - "Quarterly restore drills"
+    evidence:
+      - path: "docs/disaster-recovery.md"
+        type: "DR plan"
+        frequency: "Annual review"
+      - path: "backup/"
+        type: "Backup automation"
+        frequency: "Continuous"
+      - path: "compliance/evidence/restore-drills/"
+        type: "Drill reports"
+        frequency: "Quarterly"
+    testing_procedure: "Review DR plan, test restore procedures, verify drill results"
+    status: "Implemented"
+
+  A1.3:
+    control: "Monitoring and incident response"
+    description: "The entity monitors systems and responds to availability incidents"
+    owner: "CTO / DevOps Lead"
+    implementation:
+      - "24/7 monitoring with Prometheus/Grafana"
+      - "PagerDuty integration for critical alerts"
+      - "Incident response procedures documented"
+      - "Post-mortem process"
+    evidence:
+      - path: "monitoring/"
+        type: "Monitoring configuration"
+        frequency: "Continuous"
+      - path: "docs/adr/runbooks/"
+        type: "Incident runbooks"
+        frequency: "Continuous"
+      - path: "compliance/evidence/incidents/"
+        type: "Incident reports and post-mortems"
+        frequency: "Per incident"
+    testing_procedure: "Test monitoring, verify incident response, review post-mortems"
+    status: "Implemented"
+
+# C - Confidentiality
+confidentiality:
+  C1.1:
+    control: "Data classification"
+    description: "The entity identifies and classifies confidential information"
+    owner: "CISO / DPO"
+    implementation:
+      - "Data classification policy (Public, Internal, Confidential, Restricted)"
+      - "PII identified and tagged"
+      - "Confidential data handling procedures"
+    evidence:
+      - path: "compliance/policies/data-classification.md"
+        type: "Classification policy"
+        frequency: "Annual review"
+      - path: "lib/observability/pii-filter.ts"
+        type: "PII handling implementation"
+        frequency: "Continuous"
+    testing_procedure: "Review classification, test PII filtering"
+    status: "Implemented"
+
+  C1.2:
+    control: "Confidential information protection"
+    description: "The entity protects confidential information from unauthorized access"
+    owner: "CTO / CISO"
+    implementation:
+      - "Encryption at rest (database, backups)"
+      - "Encryption in transit (TLS)"
+      - "Access controls (RBAC)"
+      - "PII filtering in logs and traces"
+    evidence:
+      - path: "backup/backup-config.yaml"
+        type: "Encryption configuration"
+        frequency: "Continuous"
+      - path: "lib/authz.ts"
+        type: "Authorization implementation"
+        frequency: "Continuous"
+      - path: "lib/observability/pii-filter.ts"
+        type: "PII filtering"
+        frequency: "Continuous"
+    testing_procedure: "Test encryption, verify access controls, review logs for PII"
+    status: "Implemented"
+
+# P - Processing Integrity
+processing_integrity:
+  P1.1:
+    control: "Data input validation"
+    description: "The entity validates completeness and accuracy of input data"
+    owner: "Engineering Lead"
+    implementation:
+      - "Input validation in API endpoints"
+      - "TypeScript type safety"
+      - "Prisma schema validation"
+      - "Unit tests for validation logic"
+    evidence:
+      - path: "pages/api/"
+        type: "API validation code"
+        frequency: "Continuous"
+      - path: "__tests__/"
+        type: "Validation tests"
+        frequency: "Continuous"
+    testing_procedure: "Review validation logic, test with invalid inputs"
+    status: "Implemented"
+
+  P1.2:
+    control: "Data processing accuracy"
+    description: "The entity ensures data is processed accurately and completely"
+    owner: "Engineering Lead"
+    implementation:
+      - "Calculation engine with comprehensive tests"
+      - "Data integrity constraints in database"
+      - "Reconciliation processes"
+      - "Audit trail of all calculations"
+    evidence:
+      - path: "lib/calc/"
+        type: "Calculation implementation"
+        frequency: "Continuous"
+      - path: "__tests__/lib/calc/"
+        type: "Calculation tests"
+        frequency: "Continuous"
+      - path: "prisma/schema.prisma"
+        type: "Database constraints"
+        frequency: "Continuous"
+    testing_procedure: "Test calculations, verify data integrity, review audit logs"
+    status: "Implemented"
+
+# S - Security
+security:
+  S1.1:
+    control: "Logical and physical access controls"
+    description: "The entity restricts logical and physical access to authorized users"
+    owner: "CTO / CISO"
+    implementation:
+      - "Multi-factor authentication (MFA) required"
+      - "Role-based access control (RBAC)"
+      - "Principle of least privilege"
+      - "Access reviews (quarterly)"
+    evidence:
+      - path: "lib/authz.ts"
+        type: "RBAC implementation"
+        frequency: "Continuous"
+      - path: "compliance/evidence/access-reviews/"
+        type: "Quarterly access reviews"
+        frequency: "Quarterly"
+    testing_procedure: "Test authentication, verify RBAC, review access logs"
+    status: "Implemented"
+
+  S1.2:
+    control: "Security monitoring"
+    description: "The entity monitors for security events and responds to incidents"
+    owner: "CISO / Security Team"
+    implementation:
+      - "Security monitoring via Prometheus"
+      - "Failed login attempt tracking"
+      - "Anomaly detection"
+      - "Security incident response plan"
+    evidence:
+      - path: "monitoring/prometheus-alerts.yaml"
+        type: "Security alerts"
+        frequency: "Continuous"
+      - path: "compliance/policies/incident-response.md"
+        type: "IR plan"
+        frequency: "Annual review"
+    testing_procedure: "Test security alerts, review incident logs"
+    status: "Implemented"
+
+  S1.3:
+    control: "Vulnerability management"
+    description: "The entity identifies and remediates vulnerabilities"
+    owner: "CTO / Security Team"
+    implementation:
+      - "Dependency scanning in CI/CD (Snyk/Dependabot)"
+      - "Annual penetration testing"
+      - "Vulnerability patching SLA (Critical: 7d, High: 30d)"
+    evidence:
+      - path: ".github/workflows/"
+        type: "Security scanning config"
+        frequency: "Continuous"
+      - path: "compliance/evidence/pen-tests/"
+        type: "Pen-test reports"
+        frequency: "Annual"
+      - path: "compliance/evidence/vulnerability-patching/"
+        type: "Patch logs"
+        frequency: "Ongoing"
+    testing_procedure: "Review scan results, verify patching SLA, review pen-test findings"
+    status: "Implemented"
+
+# Additional control categories as needed...
+
+# Evidence automation
+evidence_automation:
+  automated_evidence:
+    - name: "Git commit history"
+      description: "Version control provides change audit trail"
+      evidence_path: ".git/"
+      frequency: "Continuous"
+      retention: "Indefinite"
+
+    - name: "CI/CD pipeline logs"
+      description: "Deployment and test execution logs"
+      evidence_path: ".github/workflows/"
+      frequency: "Per deployment"
+      retention: "1 year"
+
+    - name: "Prometheus metrics"
+      description: "System availability, performance, security metrics"
+      evidence_path: "monitoring/"
+      frequency: "Real-time"
+      retention: "1 year"
+
+    - name: "Audit logs (Retraced)"
+      description: "User action audit trail"
+      evidence_path: "External (Retraced API)"
+      frequency: "Real-time"
+      retention: "7 years"
+
+    - name: "Backup success logs"
+      description: "Backup execution and verification"
+      evidence_path: "backup/scripts/"
+      frequency: "Daily"
+      retention: "1 year"
+
+    - name: "Restore drill reports"
+      description: "Quarterly DR drill results"
+      evidence_path: "compliance/evidence/restore-drills/"
+      frequency: "Quarterly"
+      retention: "7 years"
