@@ -1,271 +1,367 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/boxyhq/jackson/assets/66887028/871d9c0f-d351-49bb-9458-2542830d7910">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/boxyhq/jackson/assets/66887028/4073c181-0653-4d5b-b74f-e7e84fe79da8">
-  <img alt="BoxyHQ Banner" src="https://github.com/boxyhq/jackson/assets/66887028/b40520b7-dbce-400b-88d3-400d1c215ea1">
-</picture>
+# CPAM - Commodity Price Analysis & Management
 
-# ⭐ Enterprise SaaS Starter Kit
+Enterprise-grade SaaS platform for commodity price analysis, hedging strategy modeling, and contract price adjustments. Built on Next.js with production-ready observability, SLOs, and compliance features.
 
-<p>
-    <a href="https://github.com/boxyhq/saas-starter-kit/stargazers"><img src="https://img.shields.io/github/stars/boxyhq/saas-starter-kit" alt="Github stargazers"></a>
-    <a href="https://github.com/boxyhq/saas-starter-kit/issues"><img src="https://img.shields.io/github/issues/boxyhq/saas-starter-kit" alt="Github issues"></a>
-    <a href="https://github.com/boxyhq/saas-starter-kit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/boxyhq/saas-starter-kit" alt="license"></a>
-    <a href="https://twitter.com/BoxyHQ"><img src="https://img.shields.io/twitter/follow/BoxyHQ?style=social" alt="Twitter"></a>
-    <a href="https://www.linkedin.com/company/boxyhq"><img src="https://img.shields.io/badge/LinkedIn-blue" alt="LinkedIn"></a>
-    <a href="https://discord.gg/uyb7pYt4Pa"><img src="https://img.shields.io/discord/877585485235630130" alt="Discord"></a>
-</p>
+## 📋 Overview
 
-The Open Source Next.js SaaS boilerplate for Enterprise SaaS app development.
+CPAM enables procurement teams to:
+- Track commodity price indices across multiple sources
+- Build portfolio items with complex commodity exposures
+- Model hedging strategies and scenarios
+- Calculate contract price adjustments automatically
+- Generate approval workflows and audit trails
+- Export to ERP systems (SAP S/4, Coupa)
 
-Please star ⭐ the repo if you want us to continue developing and improving the SaaS Starter Kit! 😀
+**Key Performance Targets:**
+- ⚡ < 5 minutes calculation time for 10,000 items
+- 📊 Support for 1M+ items per tenant
+- 🎯 99.9% API availability SLO
+- 🔄 < 1 hour data freshness for market prices
 
-## 📖 Additional Resources
+## 🛠️ Tech Stack
 
-Video - [BoxyHQ's SaaS Starter Kit: Your Ultimate Enterprise-Compliant Boilerplate](https://www.youtube.com/watch?v=oF8QIwQIhyo) <br>
-Blog - [Enterprise-ready Saas Starter Kit](https://boxyhq.com/blog/enterprise-ready-saas-starter-kit)
+### Core Framework
+- **[Next.js](https://nextjs.org)** - React framework with SSR and API routes
+- **[React](https://reactjs.org)** - UI component library
+- **[TypeScript](https://www.typescriptlang.org)** - Type-safe development
+- **[Tailwind CSS](https://tailwindcss.com)** - Utility-first styling
 
-Next.js-based SaaS starter kit saves you months of development by starting you off with all the features that are the same in every product, so you can focus on what makes your app unique.
+### Database & ORM
+- **[PostgreSQL](https://www.postgresql.org)** - Primary database
+- **[Prisma](https://www.prisma.io)** - Type-safe ORM and migrations
 
-## 🛠️ Built With
+### Authentication & Security
+- **[NextAuth.js](https://next-auth.js.org)** - Authentication (Email, OAuth, SAML SSO)
+- **[SAML Jackson](https://github.com/boxyhq/jackson)** - Enterprise SSO and Directory Sync
+- PII filtering and data sanitization
 
-- [Next.js](https://nextjs.org)
-  This is a React framework that provides features such as server-side rendering and static site generation. It's used for building the user interface of your application. The main configuration for Next.js can be found in `next.config.js`.
-- [Tailwind CSS](https://tailwindcss.com)
-  This is a utility-first CSS framework for rapidly building custom user interfaces. It's used for styling the application. The configuration for Tailwind CSS can be found in `postcss.config.js`.
-- [Postgres](https://www.postgresql.org)
-  This is a powerful, open source object-relational database system. It's used for storing application data. The connection to Postgres is likely managed through Prisma.
-- [React](https://reactjs.org)
-  This is a JavaScript library for building user interfaces. It's used for creating the interactive elements of your application. The React components are located in the components directory.
-- [Prisma](https://www.prisma.io)
-  This is an open-source database toolkit. It's used for object-relational mapping, which simplifies the process of writing database queries. Prisma configuration and schema can be found in the prisma directory.
-- [TypeScript](https://www.typescriptlang.org)
-  This is a typed superset of JavaScript that compiles to plain JavaScript. It's used to make the code more robust and maintainable. TypeScript definitions and configurations can be found in files like `next-env.d.ts` and `i18next.d.ts`.
-- [SAML Jackson](https://github.com/boxyhq/jackson) (Provides SAML SSO, Directory Sync)
-  This is a service for handling SAML SSO (Single Sign-On). It's used to allow users to sign in with a single ID and password to any of several related systems i.e (using a single set of credentials). The implementation of SAML Jackson is primarily located within the files associated with authentication.
-- [Svix](https://www.svix.com/) (Provides Webhook Orchestration)
-  This is a service for handling webhooks. It's used to emit events on user/team CRUD operations, which can then be caught and handled by other parts of the application or external services. The integration of Svix is distributed throughout the codebase, primarily in areas where Create, Read, Update, and Delete (CRUD) operations are executed.
-- [Retraced](https://github.com/retracedhq/retraced) (Provides Audit Logs Service)
-  This is a service for audit logging and data visibility. It helps track user activities within the application i.e (who did what and when in the application). The usage of Retraced would be dispersed throughout the codebase, likely in the files where important actions are performed.
-- [Stripe](https://stripe.com) (Provides Payments)
-  This is a service for handling payments. It's used to process payments for the application. The integration of Stripe is likely found in the files associated with billing and subscriptions.
-- [Playwright](https://playwright.dev) (Provides E2E tests)
-  This is a Node.js library for automating browsers. It's used to run end-to-end tests on the application. The Playwright configuration and tests can be found in the tests directory.
-- [Docker](https://www.docker.com) (Provides Docker Compose)
-  This is a platform for developing, shipping, and running applications. It's used to containerize the application and its dependencies. The Docker configuration can be found in the Dockerfile and docker-compose.yml.
-- [NextAuth.js](https://next-auth.js.org) (Provides Authentication)
-  This is a complete open-source authentication solution for Next.js applications. It's used to handle user authentication and authorization. The NextAuth.js configuration and providers can be found in the `pages/api/auth/[...nextauth].ts` file.
+### Observability & Operations
+- **[OpenTelemetry](https://opentelemetry.io)** - Distributed tracing
+- **[Prometheus](https://prometheus.io)** - Metrics collection and alerting
+- **[Grafana](https://grafana.com)** - Dashboards and visualization
+- **[AlertManager](https://prometheus.io/docs/alerting/latest/alertmanager/)** - Alert routing and management
+- SLO tracking with burn-rate alerting
 
-## 🚀 Deployment
+### Billing & Payments
+- **[Stripe](https://stripe.com)** - Subscription billing and payments
+- Usage-based metering and entitlements
 
-<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fboxyhq%2Fsaas-starter-kit&env=NEXTAUTH_SECRET,SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,DATABASE_URL,APP_URL">
-<img width="90" alt="Deploy with Vercel" src="https://vercel.com/button" />
-</a>
+### Compliance & Audit
+- **[Retraced](https://github.com/retracedhq/retraced)** - Audit logging
+- **[Svix](https://www.svix.com/)** - Webhook orchestration
+- Role-based access control (RBAC)
 
-<a href="https://heroku.com/deploy" alt="Deploy to Heroku">
-<img alt="Deploy to Heroku" src="https://www.herokucdn.com/deploy/button.svg" />
-</a>
+### Testing
+- **[Jest](https://jestjs.io/)** - Unit and integration tests
+- **[Playwright](https://playwright.dev)** - E2E browser tests
 
-<a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/boxyhq/saas-starter-kit/tree/main" alt="Deploy to DO">
-<img width="200" alt="Deploy to DO" src="https://www.deploytodo.com/do-btn-blue-ghost.svg" />
-</a>
+### DevOps
+- **[Docker](https://www.docker.com)** - Containerization
+- **[pnpm](https://pnpm.io)** - Fast, disk-efficient package manager
 
-## ✨ Getting Started
-
-Please follow these simple steps to get a local copy up and running.
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (Version: >=18.x)
-- PostgreSQL
-- NPM
-- Docker compose
+- **Node.js** (>=18.x)
+- **pnpm** (enforced via `.npmrc`)
+- **PostgreSQL** (>=14)
+- **Docker** (optional, for local development)
 
-### Development
+### Installation
 
-#### 1. Setup
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Numraio/cpam.git
+   cd cpam
+   ```
 
-- [Fork](https://github.com/boxyhq/saas-starter-kit/fork) the repository
-- Clone the repository by using this command:
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and configure:
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `NEXTAUTH_SECRET` - Generate with `openssl rand -base64 32`
+   - `SMTP_*` - Email configuration for magic links
+   - `STRIPE_SECRET_KEY` - For billing (optional in development)
+
+4. **Start the database (optional - Docker)**
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **Initialize the database**
+   ```bash
+   pnpm prisma db push
+   pnpm prisma db seed
+   ```
+
+6. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
+
+7. **Open the application**
+
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Development Tools
+
+**Prisma Studio** - Visual database editor:
 ```bash
-git clone https://github.com/<your_github_username>/saas-starter-kit.git
+pnpm prisma studio
 ```
 
-#### 2. Go to the project folder
-
+**Run tests**:
 ```bash
-cd saas-starter-kit
+# Unit and integration tests
+pnpm test
+
+# E2E tests
+pnpm test:e2e
+
+# Type checking
+pnpm tsc --noEmit
 ```
 
-#### 3. Install dependencies
-
+**Database migrations**:
 ```bash
-npm install
+# Create migration
+pnpm prisma migrate dev --name migration_name
+
+# Apply migrations
+pnpm prisma migrate deploy
 ```
 
-#### 4. Set up your .env file
+## 🏗️ Architecture
 
-Duplicate `.env.example` to `.env`.
+### Domain Model
 
+**Items** - Portfolio items with commodity exposures (e.g., a product SKU)
+- Complex exposure formulas with multiple commodities
+- Historical price tracking
+- Calculation batch processing
+
+**Index Series** - Market price data sources
+- Multiple data providers
+- Configurable update frequencies
+- Lag monitoring and alerting
+
+**Scenarios** - What-if analysis and hedging strategies
+- Price override modeling
+- Hedge position simulation
+- Baseline vs scenario comparison
+
+**Calculations** - Batch computation engine
+- Async queue-based processing
+- Prioritization and rate limiting
+- Performance targets: <5min for 10k items
+
+**Billing** - Usage-based subscription model
+- Items under management (IUM) metering
+- Stripe integration with webhooks
+- Plan gates and entitlement enforcement
+
+### Key Features
+
+✅ **Implemented:**
+- Multi-tenant authentication (Email, OAuth, SAML SSO)
+- Role-based access control (RBAC)
+- Stripe billing with usage metering
+- Scenario simulation and comparison
+- OpenTelemetry tracing with PII filtering
+- Prometheus metrics and Grafana dashboards
+- SLO tracking with burn-rate alerting
+- AlertManager integration (PagerDuty, Slack)
+- Comprehensive health checks
+- Audit logging
+- Webhook orchestration
+
+🚧 **In Progress:**
+- Disaster recovery and backup automation
+- E2E test coverage
+- SOC2 compliance controls
+
+📋 **Planned:**
+- SAP S/4 connector
+- Coupa connector
+- Performance optimization (1M items/tenant)
+- WAF and rate limiting
+- Customer-managed encryption keys (BYOK)
+
+## 📚 Documentation
+
+- **[Billing Guide](./docs/billing.md)** - Subscription plans, usage tracking, and entitlements
+- **[Scenario Simulation](./docs/scenario-simulation.md)** - What-if modeling and hedging strategies
+- **[Observability](./docs/observability.md)** - Tracing, metrics, and PII filtering
+- **[SLO & Alerting](./docs/slo-alerting.md)** - Service level objectives, error budgets, and incident response
+- **[Runbooks](./docs/adr/runbooks/)** - Incident response procedures
+
+## 🔧 Configuration
+
+### Authentication
+
+**Email Magic Link** (default):
+- Configure `SMTP_*` environment variables
+- Recommended: [AWS SES](https://aws.amazon.com/ses/), [Resend](https://resend.com/)
+
+**OAuth** (GitHub, Google):
+- Create OAuth apps in provider consoles
+- Add `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+- Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+**SAML SSO** (Enterprise):
+- Configured via Jackson service
+- Supports Okta, Azure AD, OneLogin
+
+### Billing & Payments
+
+1. Create [Stripe](https://stripe.com/) account
+2. Add `STRIPE_SECRET_KEY` from [API keys](https://dashboard.stripe.com/apikeys)
+3. Create webhook: `https://your-domain.com/api/webhooks/stripe`
+4. Add `STRIPE_WEBHOOK_SECRET` from webhook configuration
+
+### Observability
+
+**Metrics Endpoint**:
+- `GET /api/metrics` - Prometheus-compatible metrics
+- `GET /api/health` - Health check for load balancers
+- `GET /api/health?detailed=true` - Detailed health with queue depth
+
+**Grafana Dashboards**:
+- SLO Dashboard: `/grafana/dashboards/slo-dashboard.json`
+- CPAM Overview: `/grafana/dashboards/cpam-overview.json`
+
+**Alerting**:
+- Configure AlertManager: `/monitoring/alertmanager.yaml`
+- Set `PAGERDUTY_SERVICE_KEY` for critical alerts
+- Set `SLACK_API_URL` for team notifications
+
+## 🧪 Testing
+
+### Unit Tests
 ```bash
-cp .env.example .env
+# Run all unit tests
+pnpm test
+
+# Run specific test file
+pnpm test lib/billing/usage-service.spec.ts
+
+# Watch mode
+pnpm test --watch
 ```
 
-#### 5. Create a database (Optional)
-
-To make the process of installing dependencies easier, we offer a `docker-compose.yml` with a Postgres container.
-
+### E2E Tests
 ```bash
-docker-compose up -d
+# Install Playwright browsers
+pnpm playwright:update
+
+# Run E2E tests
+pnpm test:e2e
+
+# Run E2E tests in UI mode
+pnpm playwright test --ui
 ```
 
-#### 6. Set up database schema
-
+### Type Checking
 ```bash
-npx prisma db push
+# Check TypeScript types
+pnpm tsc --noEmit
 ```
 
-#### 7. Start the server
+## 🚢 Deployment
 
-In a development environment:
+### Environment Variables
 
-```bash
-npm run dev
+Required for production:
+```env
+# App
+APP_URL=https://your-domain.com
+NEXTAUTH_SECRET=<generate-with-openssl>
+
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/db
+
+# Email
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=user
+SMTP_PASSWORD=pass
+SMTP_FROM=noreply@your-domain.com
+
+# Stripe
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Monitoring (optional but recommended)
+SENTRY_DSN=https://...
+PAGERDUTY_SERVICE_KEY=...
+SLACK_API_URL=https://hooks.slack.com/...
 ```
 
-#### 8. Start the Prisma Studio
+### Docker Deployment
 
-Prisma Studio is a visual editor for the data in your database.
-
+Build and run with Docker:
 ```bash
-npx prisma studio
+docker build -t cpam .
+docker run -p 3000:3000 --env-file .env cpam
 ```
 
-#### 9. Testing
+### Database Migrations
 
-We are using [Playwright](https://playwright.dev/) to execute E2E tests. Add all tests inside the `/tests` folder.
-
-Update `playwright.config.ts` to change the playwright configuration.
-
-##### Install Playwright dependencies
-
+Always run migrations before deploying:
 ```bash
-npm run playwright:update
+pnpm prisma migrate deploy
 ```
 
-##### Run E2E tests
+## 📊 Monitoring & Operations
 
-```bash
-npm run test:e2e
-```
+### Health Checks
 
-_Note: HTML test report is generated inside the `report` folder. Currently supported browsers for test execution `chromium` and `firefox`_
+- **Liveness**: `GET /api/health`
+- **Readiness**: `GET /api/health?detailed=true`
+- **Metrics**: `GET /api/metrics` (Prometheus format)
 
-## ⚙️ Feature configuration
+### Grafana Dashboards
 
-To get started you only need to configure the database by following the steps above. For more advanced features, you can configure the following:
+1. Import dashboards from `/grafana/dashboards/`
+2. Configure Prometheus data source
+3. Monitor SLOs and error budgets
 
-### Authentication with NextAuth.js
+### Alerting
 
-The default login options are email and GitHub. Configure below:
+Alerts are configured in `/monitoring/prometheus-alerts.yaml`:
+- Critical alerts → PagerDuty + Slack
+- Warning alerts → Slack only
+- Info alerts → Dashboard only
 
-1. Generate a secret key for NextAuth.js by running `openssl rand -base64 32` and adding it to the `.env` file as `NEXTAUTH_SECRET`.
-2. For email login, configure the `SMTP_*` environment variables in the `.env` file to send magic link login emails. You can use services like [AWS SES](https://aws.amazon.com/ses/), [Sendgrid](https://sendgrid.com/) or [Resend](https://resend.com/).
-3. For social login with GitHub and Google, you need to create OAuth apps in the respective developer consoles and add the client ID and secret to the `.env` file. The default is email login and For GitHub, follow the instructions [here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). For Google, follow the instructions [here](https://support.google.com/cloud/answer/6158849?hl=en).
+See [SLO & Alerting Guide](./docs/slo-alerting.md) for details.
 
-### Svix Webhooks
+## 🤝 Contributing
 
-1. Create an account on [Svix](https://www.svix.com/)
-2. The authenticaton token and add `SVIX_API_KEY` to the `.env` file.
+We welcome contributions! Please see our [contributing guide](./CONTRIBUTING.md) for details.
 
-### Stripe Payments
+### Development Workflow
 
-1. Create an account on [Stripe](https://stripe.com/)
-2. Add the [Stripe API secret key](https://dashboard.stripe.com/apikeys) to the `.env` file as `STRIPE_SECRET_KEY`.
-3. Create a webhook in the [Stripe dashboard](https://dashboard.stripe.com/webhooks). The URL is your app hostname plus `/api/webhooks/stripe`. If you want to set this up locally you will need to use the [Stripe CLI forwarder](https://docs.stripe.com/webhooks#test-webhook).
-4. Once created, add the signing secret to the `.env` file as `STRIPE_WEBHOOK_SECRET`.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes with tests
+4. Run tests: `pnpm test`
+5. Run type checking: `pnpm tsc --noEmit`
+6. Commit with conventional commits: `feat: add new feature`
+7. Push and create a pull request
 
-### Recaptcha
+## 📝 License
 
-1. Create an account on [Google reCAPTCHA](https://www.google.com/recaptcha/admin/enterprise). This will create a Google Cloud account if you don't have one.
-2. From the Key Details in the [Google Cloud Console](https://console.cloud.google.com/security/recaptcha), add the reCAPTCHA ID to the `.env` file as `RECAPTCHA_SITE_KEY`.
-3. Click Key Details > Integration then click Use legacy key to get the secret key and add it to the `.env` file as `RECAPTCHA_SECRET_KEY`.
+[Apache 2.0 License](./LICENSE)
 
-### Sentry
+## 🙏 Acknowledgments
 
-1. Create an account on [Sentry](https://sentry.io/), skip the onboarding and create a new Next.js project.
-2. At the bottom of the page, get the DSN and add it to the `.env` file as `SENTRY_DSN`. The other variables are optional.
-
-#### Fully customizable boilerplate out of the box, see images below 👇👇👇
-
-![saas-starter-kit-poster](/public/saas-starter-kit-poster.png)
-
-## 🥇 Features
-
-- Create account
-- Sign in with Email and Password
-- Sign in with Magic Link
-- Sign in with SAML SSO
-- Sign in with Google [[Setting up Google OAuth](https://support.google.com/cloud/answer/6158849?hl=en)]
-- Sign in with GitHub [[Creating a Github OAuth App](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app)]
-- Directory Sync (SCIM)
-- Update account
-- Create team
-- Delete team
-- Invite users to the team
-- Manage team members
-- Update team settings
-- Webhooks & Events
-- Internationalization
-- Audit logs
-- Roles and Permissions
-- Dark mode
-- Email notifications
-- E2E tests
-- Docker compose
-- Prisma Studio
-- Update member role
-- Directory Sync Events
-- Avatar Upload
-- SAML SSO
-- Audit Log
-- Webhook
-- Payments
-- Security Headers
-
-## ➡️ Coming Soon
-
-- Billing & subscriptions
-- Unit and integration tests
-
-## ✨ Contributing
-
-Thanks for taking the time to contribute! Contributions make the open-source community a fantastic place to learn, inspire, and create. Any contributions you make are greatly appreciated.
-
-Please try to create bug reports that are:
-
-- _Reproducible._ Include steps to reproduce the problem.
-- _Specific._ Include as much detail as possible: which version, what environment, etc.
-- _Unique._ Do not duplicate existing opened issues.
-- _Scoped to a Single Bug._ One bug per report.
-
-[Contributing Guide](https://github.com/boxyhq/saas-starter-kit/blob/main/CONTRIBUTING.md)
-
-## 🤩 Community
-
-- [Discord](https://discord.gg/uyb7pYt4Pa) (For live discussion with the Open-Source Community and BoxyHQ team)
-- [Twitter](https://twitter.com/BoxyHQ) / [LinkedIn](https://www.linkedin.com/company/boxyhq) (Follow us)
-- [Youtube](https://www.youtube.com/@boxyhq) (Watch community events and tutorials)
-- [GitHub Issues](https://github.com/boxyhq/saas-starter-kit/issues) (Contributions, report issues, and product ideas)
-
-## 🌍 Contributors
-
-<a href="https://github.com/boxyhq/saas-starter-kit/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=boxyhq/saas-starter-kit" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
-## 🛡️ License
-
-[Apache 2.0 License](https://github.com/boxyhq/saas-starter-kit/blob/main/LICENSE)
+Built on [BoxyHQ SaaS Starter Kit](https://github.com/boxyhq/saas-starter-kit) with additional enterprise features for commodity price analysis.
