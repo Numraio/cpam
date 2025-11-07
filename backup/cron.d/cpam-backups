@@ -1,0 +1,51 @@
+# CPAM Backup Cron Jobs
+# Automated backups, verification, and restore drills
+# Target RPO: ≤ 15 minutes, Target RTO: ≤ 4 hours
+
+# Environment variables
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=ops@cpam.example.com
+
+# Backup environment
+BACKUP_DIR=/var/backups/postgresql
+BACKUP_BUCKET=prod-cpam-backups
+BACKUP_BUCKET_DR=prod-cpam-backups-dr
+AWS_REGION=us-east-1
+PROMETHEUS_PUSHGATEWAY=http://pushgateway:9091
+SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+PAGERDUTY_SERVICE_KEY=${PAGERDUTY_SERVICE_KEY}
+
+# Database backup - Daily at 2:00 AM UTC
+# Estimated duration: 45 minutes
+0 2 * * * root /backup/scripts/backup-database.sh >> /var/log/backup/database-cron.log 2>&1
+
+# Backup verification - Every 12 hours
+# Verifies WAL archiving, encryption, accessibility, retention
+0 */12 * * * root /backup/scripts/verify-backups.sh >> /var/log/backup/verification-cron.log 2>&1
+
+# Restore drill (dry-run) - Quarterly on 1st day at 4:00 AM UTC
+# Q1: January 1, Q2: April 1, Q3: July 1, Q4: October 1
+0 4 1 1,4,7,10 * root /backup/scripts/restore-drill.sh >> /var/log/backup/drill-cron.log 2>&1
+
+# Cleanup old local backups - Daily at 4:00 AM UTC
+# Removes backups older than retention period
+0 4 * * * root find /var/backups/postgresql -name "cpam_backup_*" -type d -mtime +30 -exec rm -rf {} \; >> /var/log/backup/cleanup-cron.log 2>&1
+
+# Cross-region backup sync - Every 6 hours
+# Syncs backups to DR region
+0 */6 * * * root /backup/scripts/sync-to-dr.sh >> /var/log/backup/dr-sync-cron.log 2>&1
+
+# File backups (uploads) - Every 6 hours
+0 */6 * * * root aws s3 sync /app/public/uploads s3://${BACKUP_BUCKET}/uploads/ --delete >> /var/log/backup/files-cron.log 2>&1
+
+# Report backups (WORM) - Hourly
+0 * * * * root aws s3 sync /app/reports s3://prod-cpam-reports-worm/reports/ >> /var/log/backup/reports-cron.log 2>&1
+
+# Backup metrics export - Every 5 minutes
+# Exports backup metrics to Prometheus Pushgateway
+*/5 * * * * root /backup/scripts/export-metrics.sh >> /var/log/backup/metrics-cron.log 2>&1
+
+# Health check for cron jobs - Every hour
+# Alerts if backup jobs haven't run
+0 * * * * root /backup/scripts/check-backup-health.sh >> /var/log/backup/health-cron.log 2>&1

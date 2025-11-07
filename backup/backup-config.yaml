@@ -1,0 +1,245 @@
+# Backup Configuration for CPAM
+# Disaster Recovery targets: RPO ≤ 15 minutes, RTO ≤ 4 hours
+
+backup:
+  # Recovery Point Objective: Maximum acceptable data loss
+  rpo_minutes: 15
+
+  # Recovery Time Objective: Maximum acceptable downtime
+  rto_hours: 4
+
+  # Backup retention policy
+  retention:
+    # Point-in-time recovery window
+    pitr_days: 30
+
+    # Full backup retention
+    daily_backups: 30      # Keep 30 days of daily backups
+    weekly_backups: 12     # Keep 12 weeks of weekly backups
+    monthly_backups: 12    # Keep 12 months of monthly backups
+    yearly_backups: 7      # Keep 7 years for compliance
+
+  # Database backups (PostgreSQL)
+  database:
+    enabled: true
+    method: continuous_archiving  # WAL archiving for PITR
+
+    # Full backup schedule (pg_basebackup)
+    full_backup:
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      compression: true
+      compression_level: 9
+      parallel_jobs: 4
+
+    # WAL archiving (continuous)
+    wal_archiving:
+      enabled: true
+      archive_command: "aws s3 cp %p s3://${BACKUP_BUCKET}/wal/%f"
+      archive_timeout: 300  # 5 minutes
+
+    # Backup destination
+    destination:
+      type: s3
+      bucket: "${BACKUP_BUCKET}"
+      region: "${AWS_REGION}"
+      prefix: "postgresql/"
+      storage_class: "STANDARD_IA"  # Infrequent Access for cost optimization
+
+    # Encryption
+    encryption:
+      enabled: true
+      type: "AES256"
+      kms_key_id: "${AWS_KMS_KEY_ID}"
+
+  # Application file backups
+  files:
+    enabled: true
+
+    # Uploaded files (avatars, documents)
+    uploads:
+      source: "/app/public/uploads"
+      destination: "s3://${BACKUP_BUCKET}/uploads/"
+      schedule: "0 */6 * * *"  # Every 6 hours
+      versioning: true
+
+    # Generated reports (WORM storage)
+    reports:
+      source: "/app/reports"
+      destination: "s3://${REPORTS_BUCKET}/reports/"
+      schedule: "0 */1 * * *"  # Hourly
+      versioning: true
+      worm: true  # Write-Once-Read-Many for compliance
+      retention_days: 2555  # 7 years for compliance
+
+  # Configuration backups
+  configuration:
+    enabled: true
+    schedule: "0 3 * * *"  # Daily at 3 AM
+
+    items:
+      - name: "environment_config"
+        source: "/app/.env.production"
+        encrypted: true
+
+      - name: "kubernetes_config"
+        command: "kubectl get all -o yaml"
+
+      - name: "secrets"
+        command: "kubectl get secrets -o yaml"
+        encrypted: true
+
+# Backup monitoring and alerts
+monitoring:
+  # Alert if backup fails
+  alerts:
+    - name: "backup_failed"
+      condition: "backup_status == 'failed'"
+      severity: "critical"
+      destinations: ["pagerduty", "slack"]
+
+    - name: "backup_delayed"
+      condition: "time_since_last_backup > 30m"
+      severity: "warning"
+      destinations: ["slack"]
+
+    - name: "backup_size_anomaly"
+      condition: "backup_size_diff > 50%"
+      severity: "warning"
+      destinations: ["slack"]
+
+    - name: "restore_drill_overdue"
+      condition: "days_since_last_drill > 90"
+      severity: "warning"
+      destinations: ["slack"]
+
+  # Backup metrics (Prometheus)
+  metrics:
+    - "backup_last_success_timestamp"
+    - "backup_duration_seconds"
+    - "backup_size_bytes"
+    - "backup_wal_segments_archived"
+    - "restore_drill_last_timestamp"
+    - "restore_drill_duration_seconds"
+
+# Restore verification
+verification:
+  # Automated restore testing
+  restore_drills:
+    enabled: true
+    schedule: "0 4 1 */3 *"  # Quarterly on 1st at 4 AM
+    environment: "staging"
+
+    tests:
+      - name: "database_restore"
+        type: "full_restore"
+        verify_data_integrity: true
+        verify_constraints: true
+
+      - name: "point_in_time_restore"
+        type: "pitr"
+        target_time: "15 minutes ago"
+        verify_data_loss: true
+
+      - name: "files_restore"
+        type: "files"
+        sample_size: 100
+        verify_checksums: true
+
+  # Continuous backup verification
+  continuous_verification:
+    enabled: true
+    schedule: "0 */12 * * *"  # Every 12 hours
+
+    checks:
+      - "wal_archiving_working"
+      - "backups_encrypted"
+      - "backups_accessible"
+      - "retention_policy_enforced"
+
+# Disaster recovery scenarios
+disaster_recovery:
+  scenarios:
+    # Scenario 1: Database corruption
+    - name: "database_corruption"
+      estimated_rto_minutes: 120  # 2 hours
+      estimated_rpo_minutes: 5
+      procedure: "DR-001"
+
+    # Scenario 2: Complete region failure
+    - name: "region_failure"
+      estimated_rto_minutes: 240  # 4 hours
+      estimated_rpo_minutes: 15
+      procedure: "DR-002"
+
+    # Scenario 3: Accidental data deletion
+    - name: "data_deletion"
+      estimated_rto_minutes: 60   # 1 hour
+      estimated_rpo_minutes: 5
+      procedure: "DR-003"
+
+    # Scenario 4: Ransomware attack
+    - name: "ransomware"
+      estimated_rto_minutes: 180  # 3 hours
+      estimated_rpo_minutes: 15
+      procedure: "DR-004"
+
+# Cross-region replication
+replication:
+  enabled: true
+
+  # Primary region
+  primary_region: "us-east-1"
+
+  # DR region
+  dr_region: "us-west-2"
+
+  # Replication configuration
+  database:
+    method: "streaming_replication"
+    sync_mode: "async"  # Async for performance, RPO = WAL ship time
+    replication_slots: true
+
+  backups:
+    cross_region_copy: true
+    destination_bucket: "${BACKUP_BUCKET_DR}"
+    replication_schedule: "0 */6 * * *"  # Every 6 hours
+
+# Backup lifecycle management
+lifecycle:
+  # Transition to cheaper storage after time
+  transitions:
+    - days: 30
+      storage_class: "STANDARD_IA"
+
+    - days: 90
+      storage_class: "GLACIER"
+
+    - days: 365
+      storage_class: "DEEP_ARCHIVE"
+
+  # Automated deletion based on retention
+  expiration:
+    daily_backups_days: 30
+    weekly_backups_days: 84
+    monthly_backups_days: 365
+    yearly_backups_days: 2555
+
+# Compliance and audit
+compliance:
+  # Backup audit logging
+  audit_logging:
+    enabled: true
+    log_all_access: true
+    retention_days: 2555  # 7 years
+
+  # Compliance tags
+  tags:
+    compliance: "SOC2"
+    data_classification: "confidential"
+    retention_period: "7_years"
+
+  # Immutable backups (WORM)
+  immutability:
+    enabled: true
+    mode: "compliance"  # Cannot be overridden even by root
+    retention_days: 2555
