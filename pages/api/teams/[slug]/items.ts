@@ -68,19 +68,47 @@ async function handleCreate(
       });
     }
 
-    // Create item (simplified - add full validation in production)
-    const { name, description } = req.body;
+    // Validate required fields
+    const { sku, name, description, basePrice, baseCurrency, uom, contractId, fxPolicy, pamId } = req.body;
 
+    if (!sku) {
+      return res.status(400).json({ error: 'sku is required' });
+    }
     if (!name) {
       return res.status(400).json({ error: 'name is required' });
+    }
+    if (basePrice === undefined || basePrice === null) {
+      return res.status(400).json({ error: 'basePrice is required' });
+    }
+    if (!baseCurrency) {
+      return res.status(400).json({ error: 'baseCurrency is required' });
+    }
+    if (!uom) {
+      return res.status(400).json({ error: 'uom is required' });
+    }
+    if (!contractId) {
+      return res.status(400).json({ error: 'contractId is required' });
     }
 
     const item = await prisma.item.create({
       data: {
         tenantId,
+        sku,
         name,
-        description,
-        // Add other required fields based on schema
+        description: description || null,
+        basePrice,
+        baseCurrency,
+        uom,
+        contractId,
+        fxPolicy: fxPolicy || 'PERIOD_AVG',
+        pamId: pamId || null,
+      },
+      include: {
+        contract: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -111,6 +139,13 @@ async function handleList(
   try {
     const items = await prisma.item.findMany({
       where: { tenantId },
+      include: {
+        contract: {
+          select: {
+            name: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 

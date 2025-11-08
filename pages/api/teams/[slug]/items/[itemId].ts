@@ -1,6 +1,7 @@
 /**
- * API: Single Item (Update/Delete)
+ * API: Single Item (Get/Update/Delete)
  *
+ * GET /api/teams/:slug/items/:itemId - Get item
  * PATCH /api/teams/:slug/items/:itemId - Update item
  * DELETE /api/teams/:slug/items/:itemId - Delete item
  */
@@ -38,12 +39,52 @@ export default async function handler(
   const tenantId = team.id;
 
   switch (req.method) {
+    case 'GET':
+      return handleGet(req, res, tenantId, itemId as string);
     case 'PATCH':
       return handleUpdate(req, res, tenantId, itemId as string);
     case 'DELETE':
       return handleDelete(req, res, tenantId, itemId as string);
     default:
       return res.status(405).json({ error: 'Method not allowed' });
+  }
+}
+
+/**
+ * Get single item
+ */
+async function handleGet(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  tenantId: string,
+  itemId: string
+) {
+  try {
+    const item = await prisma.item.findFirst({
+      where: {
+        id: itemId,
+        tenantId, // Ensure item belongs to tenant
+      },
+      include: {
+        contract: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!item) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    return res.status(200).json({ item });
+  } catch (error: any) {
+    console.error('Failed to get item:', error);
+    return res.status(500).json({
+      error: 'Failed to get item',
+      message: error.message,
+    });
   }
 }
 
@@ -57,7 +98,7 @@ async function handleUpdate(
   itemId: string
 ) {
   try {
-    const { name, description } = req.body;
+    const { name, description, basePrice, baseCurrency, uom, contractId, fxPolicy, pamId } = req.body;
 
     const item = await prisma.item.update({
       where: {
@@ -67,7 +108,20 @@ async function handleUpdate(
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
+        ...(basePrice !== undefined && { basePrice }),
+        ...(baseCurrency !== undefined && { baseCurrency }),
+        ...(uom !== undefined && { uom }),
+        ...(contractId !== undefined && { contractId }),
+        ...(fxPolicy !== undefined && { fxPolicy }),
+        ...(pamId !== undefined && { pamId }),
         updatedAt: new Date(),
+      },
+      include: {
+        contract: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
