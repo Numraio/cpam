@@ -1,6 +1,6 @@
 import useSWR from 'swr';
-import fetcher from '@/lib/fetcher';
 import useTeams from './useTeams';
+import { fetcher } from '@/lib/common';
 
 export default function useScenarios() {
   const { teams, isLoading: teamsLoading } = useTeams();
