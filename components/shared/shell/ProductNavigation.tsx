@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   DocumentTextIcon,
   Cog6ToothIcon,
+  CircleStackIcon,
 } from '@heroicons/react/24/outline';
 
 const ProductNavigation = ({ activePathname }: NavigationProps) => {
@@ -56,6 +57,24 @@ const ProductNavigation = ({ activePathname }: NavigationProps) => {
           name: 'Add Series',
           href: '/index-series/new',
           active: activePathname === '/index-series/new',
+        },
+      ],
+    },
+    {
+      name: 'PAMs',
+      href: '/pams',
+      icon: CircleStackIcon,
+      active: activePathname.startsWith('/pams'),
+      items: [
+        {
+          name: 'All PAMs',
+          href: '/pams',
+          active: activePathname === '/pams',
+        },
+        {
+          name: 'Create PAM',
+          href: '/pams/new',
+          active: activePathname === '/pams/new',
         },
       ],
     },
