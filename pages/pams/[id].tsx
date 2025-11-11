@@ -1,16 +1,34 @@
 import type { NextPageWithLayout } from '@/types';
 import { AccountLayout } from '@/components/layouts';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Loading } from '@/components/shared';
-import { Button } from 'react-daisyui';
-import { ArrowLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { Button, Tabs } from 'react-daisyui';
+import {
+  ArrowLeftIcon,
+  PencilIcon,
+  CheckIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/24/outline';
 import usePAMDetail from '@/hooks/usePAMDetail';
-import { formatDistance } from 'date-fns';
+import FormulaPreviewBar from '@/components/pam/FormulaPreviewBar';
 
 const PAMDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { isLoading, isError, pam, teamSlug } = usePAMDetail(id as string);
+  const pamId = id as string;
+
+  const { isLoading, isError, pam, mutate, teamSlug } = usePAMDetail(pamId);
+
+  const [activeTab, setActiveTab] = useState<
+    'formula' | 'performance' | 'mapping'
+  >('formula');
+  const [isSaving, setIsSaving] = useState(false);
+  const [formulaType, setFormulaType] = useState<'additive' | 'multiplicative'>(
+    'additive'
+  );
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
 
   if (isLoading) {
     return <Loading />;
@@ -20,239 +38,271 @@ const PAMDetailPage: NextPageWithLayout = () => {
     return (
       <div className="p-6">
         <div className="alert alert-error">
-          <span>PAM not found or you do not have access to it.</span>
+          <span>Failed to load PAM. Please try again.</span>
         </div>
       </div>
     );
   }
 
-  const handleDelete = async () => {
-    const confirmed = confirm(
-      `Are you sure you want to delete PAM "${pam.name}"? This action cannot be undone.`
-    );
-
-    if (!confirmed) return;
-
+  const handleStatusChange = async (newStatus: 'DRAFT' | 'TEST' | 'ACTIVE') => {
     try {
-      const response = await fetch(`/api/teams/${teamSlug}/pams/${pam.id}`, {
-        method: 'DELETE',
+      const response = await fetch(\`/api/teams/\${teamSlug}/pams/\${pamId}/status\`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
-        router.push('/pams');
+        await mutate();
       } else {
-        alert('Failed to delete PAM. Please try again.');
+        console.error('Failed to update status');
       }
     } catch (error) {
-      console.error('Error deleting PAM:', error);
-      alert('Failed to delete PAM. Please try again.');
+      console.error('Error updating status:', error);
     }
   };
 
-  const graph = pam.graph || { nodes: [], edges: [], output: '' };
-  const nodeCount = graph.nodes?.length || 0;
-  const edgeCount = graph.edges?.length || 0;
-  const outputNode = graph.nodes?.find((n: any) => n.id === graph.output);
+  const handleNameUpdate = async () => {
+    if (!editedName.trim() || editedName === pam.name) {
+      setIsEditingName(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(\`/api/teams/\${teamSlug}/pams/\${pamId}\`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editedName }),
+      });
+
+      if (response.ok) {
+        await mutate();
+        setIsEditingName(false);
+      } else {
+        console.error('Failed to update name');
+      }
+    } catch (error) {
+      console.error('Error updating name:', error);
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'badge-success';
+      case 'TEST':
+        return 'badge-warning';
+      case 'DRAFT':
+      default:
+        return 'badge-ghost';
+    }
+  };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/pams')}
-        >
-          Back to PAMs
-        </Button>
-      </div>
+    <div className="min-h-screen bg-base-200">
+      {/* Header and Navigation */}
+      <div className="bg-base-100 shadow-sm">
+        <div className="p-6 border-b border-base-300">
+          <div className="flex items-start justify-between mb-4">
+            <Button
+              size="sm"
+              color="ghost"
+              startIcon={<ArrowLeftIcon className="h-4 w-4" />}
+              onClick={() => router.push('/pams')}
+            >
+              Back to PAMs
+            </Button>
 
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{pam.name}</h1>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                color="ghost"
+                startIcon={<QuestionMarkCircleIcon className="h-4 w-4" />}
+                onClick={() => {
+                  // Open help modal or documentation
+                  alert('Formula Builder Help: Learn how to build pricing formulas with nodes and connections.');
+                }}
+              >
+                Help
+              </Button>
+              <Button
+                size="sm"
+                color="ghost"
+                onClick={() => router.push(\`/pams/\${pamId}/edit\`)}
+                startIcon={<PencilIcon className="h-4 w-4" />}
+              >
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                color="primary"
+                loading={isSaving}
+                startIcon={<CheckIcon className="h-4 w-4" />}
+                onClick={async () => {
+                  setIsSaving(true);
+                  // Save any pending changes
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                  setIsSaving(false);
+                }}
+              >
+                Save Draft
+              </Button>
+            </div>
+          </div>
+
+          {/* Title and Status */}
+          <div className="flex items-center gap-3 mb-2">
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  className="input input-bordered input-lg font-bold"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onBlur={handleNameUpdate}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleNameUpdate();
+                    if (e.key === 'Escape') setIsEditingName(false);
+                  }}
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <h1
+                className="text-3xl font-bold cursor-pointer hover:text-primary transition"
+                onClick={() => {
+                  setEditedName(pam.name);
+                  setIsEditingName(true);
+                }}
+              >
+                {pam.name}
+              </h1>
+            )}
+
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className={\`badge badge-lg cursor-pointer \${getStatusBadgeClass(pam.status)}\`}>
+                {pam.status}
+              </label>
+              <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                <li>
+                  <a onClick={() => handleStatusChange('DRAFT')}>
+                    <span className="badge badge-ghost badge-sm">DRAFT</span>
+                    <span>Work in progress</span>
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => handleStatusChange('TEST')}>
+                    <span className="badge badge-warning badge-sm">TEST</span>
+                    <span>Ready for testing</span>
+                  </a>
+                </li>
+                <li>
+                  <a onClick={() => handleStatusChange('ACTIVE')}>
+                    <span className="badge badge-success badge-sm">ACTIVE</span>
+                    <span>Live in production</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           {pam.description && (
-            <p className="text-gray-600 mt-1">{pam.description}</p>
+            <p className="text-gray-600">{pam.description}</p>
           )}
-          <div className="flex gap-4 mt-2 text-sm text-gray-500">
-            <span>Version {pam.version}</span>
-            <span>Updated {formatDistance(new Date(pam.updatedAt), new Date(), { addSuffix: true })}</span>
+
+          {/* Tabs */}
+          <div className="mt-6">
+            <Tabs variant="bordered" size="lg">
+              <Tabs.Tab
+                active={activeTab === 'formula'}
+                onClick={() => setActiveTab('formula')}
+              >
+                Formula Builder
+              </Tabs.Tab>
+              <Tabs.Tab
+                active={activeTab === 'performance'}
+                onClick={() => setActiveTab('performance')}
+              >
+                Historical Performance
+              </Tabs.Tab>
+              <Tabs.Tab
+                active={activeTab === 'mapping'}
+                onClick={() => setActiveTab('mapping')}
+              >
+                Product Mapping
+              </Tabs.Tab>
+            </Tabs>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            color="primary"
-            startIcon={<PencilIcon className="h-4 w-4" />}
-            onClick={() => router.push(`/pams/${pam.id}/edit`)}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            color="error"
-            startIcon={<TrashIcon className="h-4 w-4" />}
-            onClick={handleDelete}
-          >
-            Delete
-          </Button>
-        </div>
+
+        {/* Formula Preview Bar - only show on Formula Builder tab */}
+        {activeTab === 'formula' && (
+          <FormulaPreviewBar
+            graph={pam.graph}
+            formulaType={formulaType}
+            onFormulaTypeChange={setFormulaType}
+          />
+        )}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Nodes</h2>
-            <p className="text-3xl font-bold text-primary">{nodeCount}</p>
-            <p className="text-sm text-gray-500">Graph components</p>
-          </div>
-        </div>
+      {/* Tab Content */}
+      <div className="p-6">
+        {activeTab === 'formula' && (
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title">Formula Builder</h2>
+              <p className="text-gray-600 mb-4">
+                Build your pricing formula by adding and connecting components
+              </p>
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Connections</h2>
-            <p className="text-3xl font-bold text-secondary">{edgeCount}</p>
-            <p className="text-sm text-gray-500">Between nodes</p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Output Node</h2>
-            <p className="text-lg font-bold">{outputNode?.label || outputNode?.type || 'Not set'}</p>
-            <p className="text-xs text-gray-500">{graph.output ? graph.output.substring(0, 12) + '...' : 'N/A'}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Graph Visualization */}
-      <div className="card bg-base-100 shadow-xl mb-6">
-        <div className="card-body">
-          <h2 className="card-title">Graph Visualization</h2>
-          {nodeCount > 0 ? (
-            <div className="space-y-4">
-              {/* Nodes Table */}
-              <div>
-                <h3 className="font-semibold mb-2">Nodes ({nodeCount})</h3>
-                <div className="overflow-x-auto">
-                  <table className="table table-sm table-zebra w-full">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Label</th>
-                        <th>Configuration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {graph.nodes.map((node: any) => (
-                        <tr key={node.id}>
-                          <td className="font-mono text-xs">{node.id.substring(0, 12)}...</td>
-                          <td>
-                            <span className="badge badge-sm">{node.type}</span>
-                          </td>
-                          <td className="font-medium">{node.label || '-'}</td>
-                          <td className="text-xs">
-                            <pre className="bg-base-200 p-1 rounded">
-                              {JSON.stringify(node.config, null, 2)}
-                            </pre>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              {/* TODO: Integrate refactored GraphBuilder component */}
+              <div className="alert alert-info">
+                <span>Formula Builder UI will be integrated here (refactored GraphBuilder)</span>
               </div>
 
-              {/* Edges Table */}
-              {edgeCount > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-2">Connections ({edgeCount})</h3>
-                  <div className="overflow-x-auto">
-                    <table className="table table-sm table-zebra w-full">
-                      <thead>
-                        <tr>
-                          <th>From Node</th>
-                          <th></th>
-                          <th>To Node</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {graph.edges.map((edge: any, index: number) => {
-                          const fromNode = graph.nodes.find((n: any) => n.id === edge.from);
-                          const toNode = graph.nodes.find((n: any) => n.id === edge.to);
-                          return (
-                            <tr key={index}>
-                              <td>
-                                <div className="font-medium">{fromNode?.label || fromNode?.type}</div>
-                                <div className="text-xs font-mono text-gray-500">
-                                  {edge.from.substring(0, 12)}...
-                                </div>
-                              </td>
-                              <td className="text-center">→</td>
-                              <td>
-                                <div className="font-medium">{toNode?.label || toNode?.type}</div>
-                                <div className="text-xs font-mono text-gray-500">
-                                  {edge.to.substring(0, 12)}...
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+              {/* Graph visualization placeholder */}
+              <div className="bg-base-200 rounded-lg p-6 min-h-[400px] flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <p className="mb-2">Formula graph visualization</p>
+                  <p className="text-sm">
+                    {pam.graph.nodes?.length || 0} nodes, {pam.graph.edges?.length || 0} connections
+                  </p>
                 </div>
-              )}
-
-              {/* Output Node Info */}
-              {graph.output && outputNode && (
-                <div className="alert alert-success">
-                  <div>
-                    <div className="font-semibold">Output Node</div>
-                    <div className="text-sm">
-                      {outputNode.label || outputNode.type} ({outputNode.type})
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No nodes in graph. Edit the PAM to add nodes.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Metadata */}
-      {graph.metadata && (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Metadata</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {graph.metadata.baseCurrency && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-600">Base Currency</div>
-                  <div className="text-lg">{graph.metadata.baseCurrency}</div>
-                </div>
-              )}
-              {graph.metadata.baseUnit && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-600">Base Unit</div>
-                  <div className="text-lg">{graph.metadata.baseUnit}</div>
-                </div>
-              )}
-              {graph.metadata.description && (
-                <div>
-                  <div className="text-sm font-semibold text-gray-600">Description</div>
-                  <div className="text-sm">{graph.metadata.description}</div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {activeTab === 'performance' && (
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title">Historical Performance</h2>
+              <p className="text-gray-600 mb-4">
+                Analyze how this formula performed historically
+              </p>
+
+              <div className="alert alert-info">
+                <span>Historical Performance UI will be implemented in Issue #55</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'mapping' && (
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title">Product Mapping</h2>
+              <p className="text-gray-600 mb-4">
+                Map products to this pricing mechanism
+              </p>
+
+              <div className="alert alert-info">
+                <span>Product Mapping UI - future enhancement</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

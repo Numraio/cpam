@@ -6,6 +6,7 @@ interface PAM {
   id: string;
   name: string;
   description?: string;
+  status: 'DRAFT' | 'TEST' | 'ACTIVE';
   version: number;
   graph: any;
   createdAt: string;
@@ -52,12 +53,25 @@ const PAMList: React.FC<PAMListProps> = ({ pams, teamSlug, onUpdate }) => {
     }
   };
 
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'badge-success';
+      case 'TEST':
+        return 'badge-warning';
+      case 'DRAFT':
+      default:
+        return 'badge-ghost';
+    }
+  };
+
   return (
     <div className="overflow-x-auto bg-white rounded-lg shadow">
       <table className="table table-zebra w-full">
         <thead>
           <tr>
             <th>Name</th>
+            <th>Status</th>
             <th>Description</th>
             <th>Nodes</th>
             <th>Version</th>
@@ -73,6 +87,11 @@ const PAMList: React.FC<PAMListProps> = ({ pams, teamSlug, onUpdate }) => {
             return (
               <tr key={pam.id} className="hover">
                 <td className="font-medium">{pam.name}</td>
+                <td>
+                  <span className={`badge badge-sm ${getStatusBadgeClass(pam.status)}`}>
+                    {pam.status}
+                  </span>
+                </td>
                 <td className="text-sm text-gray-600">
                   {pam.description || '-'}
                 </td>
