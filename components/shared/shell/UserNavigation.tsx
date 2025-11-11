@@ -11,6 +11,7 @@ import {
   DocumentTextIcon,
   Cog6ToothIcon,
   CircleStackIcon,
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslation } from 'next-i18next';
 import NavigationItems from './NavigationItems';
@@ -97,6 +98,12 @@ const UserNavigation = ({ activePathname }: NavigationProps) => {
           active: activePathname === '/scenarios/new',
         },
       ],
+    },
+    {
+      name: 'Comparator',
+      href: '/comparator',
+      icon: ArrowsRightLeftIcon,
+      active: activePathname?.startsWith('/comparator'),
     },
     {
       name: 'Calculations',
