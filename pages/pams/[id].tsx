@@ -13,6 +13,11 @@ import {
 import usePAMDetail from '@/hooks/usePAMDetail';
 import FormulaPreviewBar from '@/components/pam/FormulaPreviewBar';
 import FormulaBuilder from '@/components/pam/FormulaBuilder';
+import HistoricalControlPanel from '@/components/pam/HistoricalControlPanel';
+import HistoricalPerformanceChart from '@/components/pam/HistoricalPerformanceChart';
+import DataAuditTable from '@/components/pam/DataAuditTable';
+import usePAMHistoricalData from '@/hooks/usePAMHistoricalData';
+import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
 const PAMDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -31,6 +36,23 @@ const PAMDetailPage: NextPageWithLayout = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
 
+  // Historical Performance state
+  const [dateRange, setDateRange] = useState({
+    start: startOfMonth(subMonths(new Date(), 12)),
+    end: endOfMonth(new Date()),
+  });
+  const [baselineDate, setBaselineDate] = useState(startOfMonth(subMonths(new Date(), 12)));
+  const [viewMode, setViewMode] = useState<'component' | 'mechanism'>('component');
+  const [frequency, setFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY'>('MONTHLY');
+
+  // Fetch historical data only when performance tab is active
+  const { data: historicalData, isLoading: isHistoricalLoading } = usePAMHistoricalData(
+    activeTab === 'performance' ? pamId : '',
+    activeTab === 'performance' ? dateRange : null,
+    activeTab === 'performance' ? baselineDate : null,
+    frequency
+  );
+
   if (isLoading) {
     return <Loading />;
   }
@@ -47,7 +69,7 @@ const PAMDetailPage: NextPageWithLayout = () => {
 
   const handleStatusChange = async (newStatus: 'DRAFT' | 'TEST' | 'ACTIVE') => {
     try {
-      const response = await fetch(\`/api/teams/\${teamSlug}/pams/\${pamId}/status\`, {
+      const response = await fetch(`/api/teams/${teamSlug}/pams/${pamId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -70,7 +92,7 @@ const PAMDetailPage: NextPageWithLayout = () => {
     }
 
     try {
-      const response = await fetch(\`/api/teams/\${teamSlug}/pams/\${pamId}\`, {
+      const response = await fetch(`/api/teams/${teamSlug}/pams/${pamId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editedName }),
@@ -129,7 +151,7 @@ const PAMDetailPage: NextPageWithLayout = () => {
               <Button
                 size="sm"
                 color="ghost"
-                onClick={() => router.push(\`/pams/\${pamId}/edit\`)}
+                onClick={() => router.push(`/pams/${pamId}/edit`)}
                 startIcon={<PencilIcon className="h-4 w-4" />}
               >
                 Edit
@@ -181,7 +203,7 @@ const PAMDetailPage: NextPageWithLayout = () => {
             )}
 
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className={\`badge badge-lg cursor-pointer \${getStatusBadgeClass(pam.status)}\`}>
+              <label tabIndex={0} className={`badge badge-lg cursor-pointer ${getStatusBadgeClass(pam.status)}`}>
                 {pam.status}
               </label>
               <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
@@ -272,15 +294,47 @@ const PAMDetailPage: NextPageWithLayout = () => {
         )}
 
         {activeTab === 'performance' && (
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">Historical Performance</h2>
-              <p className="text-gray-600 mb-4">
-                Analyze how this formula performed historically
-              </p>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Control Panel */}
+              <div className="lg:col-span-1">
+                <HistoricalControlPanel
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  baselineDate={baselineDate}
+                  onBaselineDateChange={setBaselineDate}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                  frequency={frequency}
+                  onFrequencyChange={setFrequency}
+                />
+              </div>
 
-              <div className="alert alert-info">
-                <span>Historical Performance UI will be implemented in Issue #55</span>
+              {/* Chart and Audit Table */}
+              <div className="lg:col-span-3 space-y-6">
+                {isHistoricalLoading ? (
+                  <div className="card bg-base-100 shadow-xl">
+                    <div className="card-body">
+                      <Loading />
+                    </div>
+                  </div>
+                ) : historicalData ? (
+                  <>
+                    <HistoricalPerformanceChart
+                      componentData={historicalData.componentData}
+                      mechanismData={historicalData.mechanismData}
+                      viewMode={viewMode}
+                    />
+                    <DataAuditTable
+                      auditTrail={historicalData.auditTrail}
+                      averagingRule={historicalData.averagingRule}
+                    />
+                  </>
+                ) : (
+                  <div className="alert alert-warning">
+                    <span>No historical data available. Please configure index series in the Formula Builder first.</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
