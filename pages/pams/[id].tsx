@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import usePAMDetail from '@/hooks/usePAMDetail';
 import FormulaPreviewBar from '@/components/pam/FormulaPreviewBar';
+import FormulaBuilder from '@/components/pam/FormulaBuilder';
 
 const PAMDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -250,25 +251,22 @@ const PAMDetailPage: NextPageWithLayout = () => {
         {activeTab === 'formula' && (
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              <h2 className="card-title">Formula Builder</h2>
-              <p className="text-gray-600 mb-4">
-                Build your pricing formula by adding and connecting components
-              </p>
-
-              {/* TODO: Integrate refactored GraphBuilder component */}
-              <div className="alert alert-info">
-                <span>Formula Builder UI will be integrated here (refactored GraphBuilder)</span>
-              </div>
-
-              {/* Graph visualization placeholder */}
-              <div className="bg-base-200 rounded-lg p-6 min-h-[400px] flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <p className="mb-2">Formula graph visualization</p>
-                  <p className="text-sm">
-                    {pam.graph.nodes?.length || 0} nodes, {pam.graph.edges?.length || 0} connections
-                  </p>
-                </div>
-              </div>
+              <FormulaBuilder
+                initialGraph={pam.graph}
+                onChange={async (newGraph) => {
+                  // Auto-save graph changes
+                  try {
+                    await fetch(`/api/teams/${teamSlug}/pams/${pamId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ graph: newGraph }),
+                    });
+                    await mutate();
+                  } catch (error) {
+                    console.error('Failed to save graph:', error);
+                  }
+                }}
+              />
             </div>
           </div>
         )}
