@@ -31,3 +31,36 @@ export {
   type ModalFooterProps,
   type ConfirmModalProps,
 } from './Modal';
+export {
+  Select,
+  SearchableSelect,
+  type SelectProps,
+  type SelectOption,
+  type SearchableSelectProps,
+} from './Select';
+export { Switch, SwitchGroup, type SwitchProps, type SwitchGroupProps } from './Switch';
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from './DropdownMenu';
+export {
+  Tooltip,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+  type TooltipProps,
+} from './Tooltip';

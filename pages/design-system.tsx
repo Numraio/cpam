@@ -14,6 +14,21 @@ import {
   Modal,
   ModalFooter,
   ConfirmModal,
+  Select,
+  SearchableSelect,
+  Switch,
+  SwitchGroup,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuShortcut,
+  Tooltip,
 } from '@/components/ui';
 import {
   PlusIcon,
@@ -38,6 +53,31 @@ const DesignSystemPage: NextPageWithLayout = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [description, setDescription] = useState('');
+
+  // Select states
+  const [country, setCountry] = useState('');
+  const [searchableCountry, setSearchableCountry] = useState('');
+
+  // Switch states
+  const [notifications, setNotifications] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Dropdown states
+  const [showBookmarks, setShowBookmarks] = useState(true);
+  const [showUrls, setShowUrls] = useState(false);
+  const [person, setPerson] = useState('pedro');
+
+  const countryOptions = [
+    { value: 'us', label: 'United States' },
+    { value: 'uk', label: 'United Kingdom' },
+    { value: 'ca', label: 'Canada' },
+    { value: 'au', label: 'Australia' },
+    { value: 'de', label: 'Germany' },
+    { value: 'fr', label: 'France' },
+    { value: 'jp', label: 'Japan' },
+    { value: 'cn', label: 'China' },
+  ];
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-12">
@@ -337,6 +377,240 @@ const DesignSystemPage: NextPageWithLayout = () => {
             alert('Item deleted!');
           }}
         />
+      </section>
+
+      {/* Select Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Select</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Select */}
+          <Select
+            id="country"
+            label="Country"
+            placeholder="Select a country"
+            value={country}
+            onValueChange={setCountry}
+            options={countryOptions}
+            helperText="Choose your country of residence"
+          />
+
+          {/* Searchable Select */}
+          <SearchableSelect
+            id="searchable-country"
+            label="Searchable Select"
+            placeholder="Search for a country"
+            value={searchableCountry}
+            onValueChange={setSearchableCountry}
+            options={countryOptions}
+            searchPlaceholder="Type to search..."
+            helperText="Start typing to filter options"
+          />
+
+          {/* Required Select */}
+          <Select
+            id="required-select"
+            label="Required Field"
+            placeholder="Select an option"
+            options={countryOptions}
+            required
+            helperText="This field is required"
+          />
+
+          {/* Error State */}
+          <Select
+            id="error-select"
+            label="With Error"
+            placeholder="Select an option"
+            options={countryOptions}
+            error="Please select a valid option"
+          />
+        </div>
+      </section>
+
+      {/* Switch Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Switches</h2>
+
+        <div className="space-y-6">
+          {/* Individual Switches */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Individual</h3>
+            <div className="space-y-4">
+              <Switch
+                id="notifications-switch"
+                checked={notifications}
+                onCheckedChange={setNotifications}
+                label="Enable Notifications"
+                description="Receive email notifications for important updates"
+              />
+              <Switch
+                id="marketing-switch"
+                checked={marketing}
+                onCheckedChange={setMarketing}
+                label="Marketing Emails"
+                description="Receive promotional offers and product news"
+              />
+            </div>
+          </div>
+
+          {/* Switch Sizes */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Sizes</h3>
+            <div className="flex items-center gap-6">
+              <Switch
+                checked={notifications}
+                onCheckedChange={setNotifications}
+                size="sm"
+                label="Small"
+              />
+              <Switch
+                checked={notifications}
+                onCheckedChange={setNotifications}
+                size="md"
+                label="Medium"
+              />
+              <Switch
+                checked={notifications}
+                onCheckedChange={setNotifications}
+                size="lg"
+                label="Large"
+              />
+            </div>
+          </div>
+
+          {/* Switch Group */}
+          <SwitchGroup
+            label="Display Settings"
+            description="Customize your viewing experience"
+          >
+            <Switch
+              id="dark-mode"
+              checked={darkMode}
+              onCheckedChange={setDarkMode}
+              label="Dark Mode"
+              description="Use dark theme across the application"
+            />
+            <Switch
+              id="compact-view"
+              checked={false}
+              onCheckedChange={() => {}}
+              label="Compact View"
+              description="Show more items with reduced spacing"
+            />
+          </SwitchGroup>
+        </div>
+      </section>
+
+      {/* Dropdown Menu Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Dropdown Menus</h2>
+
+        <div className="flex flex-wrap gap-4">
+          {/* Basic Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary">Basic Menu</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                Profile
+                <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                Settings
+                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                Billing
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-error">
+                Log out
+                <DropdownMenuShortcut>⌘Q</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Checkboxes Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary">With Checkboxes</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>View Options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={showBookmarks}
+                onCheckedChange={setShowBookmarks}
+              >
+                Show Bookmarks
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={showUrls}
+                onCheckedChange={setShowUrls}
+              >
+                Show Full URLs
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Radio Group Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary">Radio Group</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Assign to</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={person} onValueChange={setPerson}>
+                <DropdownMenuRadioItem value="pedro">Pedro Duarte</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="colm">Colm Tuite</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </section>
+
+      {/* Tooltip Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Tooltips</h2>
+
+        <div className="flex flex-wrap gap-6">
+          <Tooltip content="This is a tooltip" side="top">
+            <Button>Hover me (Top)</Button>
+          </Tooltip>
+
+          <Tooltip content="Tooltip on the right" side="right">
+            <Button variant="secondary">Hover me (Right)</Button>
+          </Tooltip>
+
+          <Tooltip content="Tooltip on the bottom" side="bottom">
+            <Button variant="ghost">Hover me (Bottom)</Button>
+          </Tooltip>
+
+          <Tooltip content="Tooltip on the left" side="left">
+            <Button variant="success">Hover me (Left)</Button>
+          </Tooltip>
+
+          <Tooltip content="Delete this item permanently">
+            <IconButton
+              icon={<TrashIcon className="h-5 w-5" />}
+              ariaLabel="Delete"
+              variant="danger"
+            />
+          </Tooltip>
+
+          <Tooltip content="Edit settings" delayDuration={500}>
+            <IconButton
+              icon={<PencilIcon className="h-5 w-5" />}
+              ariaLabel="Edit"
+              variant="secondary"
+            />
+          </Tooltip>
+        </div>
       </section>
 
       {/* Design Tokens */}
