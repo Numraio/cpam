@@ -7,6 +7,15 @@ import { formatDistance } from 'date-fns';
 import QuickActions from '@/components/dashboard/QuickActions';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import { Loading } from '@/components/shared';
+import { KPICard, Card, CardHeader, CardBody } from '@/components/ui';
+import {
+  CubeIcon,
+  CurrencyDollarIcon,
+  ClockIcon,
+  CalculatorIcon,
+  ChartBarIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
 
 const Dashboard: NextPageWithLayout = () => {
   const { kpis, isLoading: kpisLoading } = useDashboardKPIs();
@@ -33,85 +42,86 @@ const Dashboard: NextPageWithLayout = () => {
       </div>
 
       {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Total Items</h2>
-            <p className="text-3xl font-bold">{kpis?.totalItems || 0}</p>
-            <p className="text-sm text-gray-500">Portfolio items</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <KPICard
+          label="Total Items"
+          value={String(kpis?.totalItems || 0)}
+          icon={<CubeIcon className="h-8 w-8" />}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Total Exposure</h2>
-            <p className="text-3xl font-bold">{formatCurrency(kpis?.totalExposure || 0)}</p>
-            <p className="text-sm text-gray-500">Current value</p>
-          </div>
-        </div>
+        <KPICard
+          label="Total Exposure"
+          value={formatCurrency(kpis?.totalExposure || 0)}
+          icon={<CurrencyDollarIcon className="h-8 w-8" />}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Pending Approvals</h2>
-            <p className="text-3xl font-bold text-warning">{kpis?.pendingApprovals || 0}</p>
-            <p className="text-sm text-gray-500">Awaiting review</p>
-          </div>
-        </div>
+        <KPICard
+          label="Pending Approvals"
+          value={String(kpis?.pendingApprovals || 0)}
+          icon={<ClockIcon className="h-8 w-8" />}
+          change={kpis?.pendingApprovals && kpis.pendingApprovals > 0 ? {
+            value: 'Needs review',
+            trend: 'neutral' as const,
+          } : undefined}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Last Calculation</h2>
-            {kpis?.lastCalculation ? (
-              <>
-                <p className="text-lg font-bold">
-                  {formatDistance(new Date(kpis.lastCalculation.createdAt), new Date(), { addSuffix: true })}
-                </p>
-                <div>
-                  {kpis.lastCalculation.status === 'COMPLETED' && (
-                    <span className="badge badge-success badge-sm">Completed</span>
-                  )}
-                  {kpis.lastCalculation.status === 'RUNNING' && (
-                    <span className="badge badge-info badge-sm">Running</span>
-                  )}
-                  {kpis.lastCalculation.status === 'FAILED' && (
-                    <span className="badge badge-error badge-sm">Failed</span>
-                  )}
-                  {kpis.lastCalculation.status === 'QUEUED' && (
-                    <span className="badge badge-warning badge-sm">Queued</span>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-3xl font-bold">--</p>
-                <p className="text-sm text-gray-500">Never</p>
-              </>
-            )}
-          </div>
-        </div>
+        <KPICard
+          label="Last Calculation"
+          value={
+            kpis?.lastCalculation
+              ? formatDistance(new Date(kpis.lastCalculation.createdAt), new Date(), { addSuffix: true })
+              : 'Never'
+          }
+          icon={<CalculatorIcon className="h-8 w-8" />}
+          change={
+            kpis?.lastCalculation
+              ? {
+                  value:
+                    kpis.lastCalculation.status === 'COMPLETED'
+                      ? 'Completed'
+                      : kpis.lastCalculation.status === 'RUNNING'
+                      ? 'Running'
+                      : kpis.lastCalculation.status === 'FAILED'
+                      ? 'Failed'
+                      : 'Queued',
+                  trend:
+                    kpis.lastCalculation.status === 'COMPLETED'
+                      ? ('up' as const)
+                      : kpis.lastCalculation.status === 'FAILED'
+                      ? ('down' as const)
+                      : ('neutral' as const),
+                }
+              : undefined
+          }
+        />
       </div>
 
       {/* Calculation Stats */}
       {kpis?.calculations && (kpis.calculations.completed > 0 || kpis.calculations.running > 0 || kpis.calculations.failed > 0) && (
-        <div className="card bg-base-100 shadow-xl mb-6">
-          <div className="card-body">
-            <h2 className="card-title">Calculation Statistics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="stat">
-                <div className="stat-title">Completed</div>
-                <div className="stat-value text-success">{kpis.calculations.completed}</div>
+        <Card variant="elevated" className="mb-8">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <ChartBarIcon className="h-6 w-6 text-primary-600" />
+              <h2 className="text-xl font-semibold text-gray-900">Calculation Statistics</h2>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4 rounded-lg bg-success-light/10 border border-success-light">
+                <p className="text-sm font-medium text-gray-600 mb-2">Completed</p>
+                <p className="text-4xl font-bold text-success">{kpis.calculations.completed}</p>
               </div>
-              <div className="stat">
-                <div className="stat-title">Running</div>
-                <div className="stat-value text-info">{kpis.calculations.running}</div>
+              <div className="text-center p-4 rounded-lg bg-primary-50 border border-primary-200">
+                <p className="text-sm font-medium text-gray-600 mb-2">Running</p>
+                <p className="text-4xl font-bold text-primary-600">{kpis.calculations.running}</p>
               </div>
-              <div className="stat">
-                <div className="stat-title">Failed</div>
-                <div className="stat-value text-error">{kpis.calculations.failed}</div>
+              <div className="text-center p-4 rounded-lg bg-error-light/10 border border-error-light">
+                <p className="text-sm font-medium text-gray-600 mb-2">Failed</p>
+                <p className="text-4xl font-bold text-error">{kpis.calculations.failed}</p>
               </div>
             </div>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       )}
 
       {/* Main Grid */}
@@ -122,12 +132,19 @@ const Dashboard: NextPageWithLayout = () => {
 
       {/* Empty State */}
       {kpis && kpis.totalItems === 0 && (
-        <div className="alert alert-info">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>Welcome to CPAM! Start by adding items, configuring index series, or creating PAMs.</span>
-        </div>
+        <Card variant="outlined" className="bg-primary-50 border-primary-200">
+          <CardBody>
+            <div className="flex items-start gap-4">
+              <InformationCircleIcon className="h-6 w-6 text-primary-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Welcome to CPAM!</h3>
+                <p className="text-gray-700">
+                  Start by adding items, configuring index series, or creating PAMs to begin managing your commodity pricing.
+                </p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );

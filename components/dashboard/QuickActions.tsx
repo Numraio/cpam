@@ -1,10 +1,12 @@
 import { useRouter } from 'next/router';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui';
+import { Card, CardHeader, CardBody } from '@/components/ui';
 import {
   CalculatorIcon,
   BeakerIcon,
   ArrowUpTrayIcon,
   CheckCircleIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 
 export default function QuickActions() {
@@ -14,48 +16,53 @@ export default function QuickActions() {
     {
       label: 'Run Calculation',
       icon: CalculatorIcon,
-      color: 'primary' as const,
+      variant: 'primary' as const,
       href: '/calculations/new',
     },
     {
       label: 'Create Scenario',
       icon: BeakerIcon,
-      color: 'secondary' as const,
+      variant: 'secondary' as const,
       href: '/scenarios/new',
     },
     {
       label: 'Upload Items',
       icon: ArrowUpTrayIcon,
-      color: 'accent' as const,
+      variant: 'secondary' as const,
       href: '/items/import',
     },
     {
       label: 'View Approvals',
       icon: CheckCircleIcon,
-      color: 'success' as const,
+      variant: 'success' as const,
       href: '/approvals',
     },
   ];
 
   return (
-    <div className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+    <Card variant="elevated">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <BoltIcon className="h-6 w-6 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>
+        </div>
+      </CardHeader>
+      <CardBody>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {actions.map((action) => (
             <Button
               key={action.label}
-              color={action.color}
+              variant={action.variant}
               size="lg"
-              className="justify-start"
-              startIcon={<action.icon className="h-6 w-6" />}
+              className="w-full justify-start"
+              leftIcon={<action.icon className="h-5 w-5" />}
               onClick={() => router.push(action.href)}
             >
               {action.label}
             </Button>
           ))}
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 }
