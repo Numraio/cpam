@@ -54,11 +54,11 @@ a {
   }
 
   .btn-primary:focus-visible {
-    @apply outline-primary;
+    @apply outline outline-2 outline-primary-500;
   }
 
   .btn-error:focus-visible {
-    @apply outline-error;
+    @apply outline outline-2 outline-error;
   }
 }
 
