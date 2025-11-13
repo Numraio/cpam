@@ -120,6 +120,10 @@ const env = {
     secretKey: process.env.STRIPE_SECRET_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
+
+  // Index data provider API keys
+  blsApiKey: process.env.BLS_API_KEY,
+  eurostatApiKey: process.env.EUROSTAT_API_KEY, // Eurostat doesn't require key, but placeholder for future
 };
 
 export default env;
