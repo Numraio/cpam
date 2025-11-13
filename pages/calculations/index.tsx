@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
-import { PlusIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Button, KPICard, Card, CardBody } from '@/components/ui';
+import { PlusIcon, ArrowPathIcon, CalculatorIcon, ClockIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import useCalculations from '@/hooks/useCalculations';
 import { Loading } from '@/components/shared';
 import CalculationsTable from '@/components/calculations/CalculationsTable';
@@ -21,9 +21,11 @@ const CalculationsPage: NextPageWithLayout = () => {
   if (isError) {
     return (
       <div className="p-6">
-        <div className="alert alert-error">
-          <span>Failed to load calculations. Please try again.</span>
-        </div>
+        <Card variant="outlined" className="bg-error-light/10 border-error">
+          <CardBody>
+            <p className="text-error font-medium">Failed to load calculations. Please try again.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -31,9 +33,11 @@ const CalculationsPage: NextPageWithLayout = () => {
   if (!teamSlug) {
     return (
       <div className="p-6">
-        <div className="alert alert-warning">
-          <span>No team found. Please create or join a team first.</span>
-        </div>
+        <Card variant="outlined" className="bg-warning-light/10 border-warning">
+          <CardBody>
+            <p className="text-warning-dark font-medium">No team found. Please create or join a team first.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -59,20 +63,20 @@ const CalculationsPage: NextPageWithLayout = () => {
             Manage batch calculations and view results
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
-            color="ghost"
+            variant="ghost"
             size="md"
-            startIcon={<ArrowPathIcon className="h-5 w-5" />}
+            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
             onClick={handleRefresh}
             loading={isRefreshing}
           >
             Refresh
           </Button>
           <Button
-            color="primary"
+            variant="primary"
             size="md"
-            startIcon={<PlusIcon className="h-5 w-5" />}
+            leftIcon={<PlusIcon className="h-5 w-5" />}
             onClick={() => router.push('/calculations/new')}
           >
             New Calculation
@@ -81,59 +85,66 @@ const CalculationsPage: NextPageWithLayout = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Total Runs</h2>
-            <p className="text-3xl font-bold">{totalCalculations}</p>
-            <p className="text-sm text-gray-500">All time</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <KPICard
+          label="Total Runs"
+          value={String(totalCalculations)}
+          icon={<CalculatorIcon className="h-8 w-8" />}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Running</h2>
-            <p className="text-3xl font-bold text-info">{runningCalculations}</p>
-            <p className="text-sm text-gray-500">In progress</p>
-          </div>
-        </div>
+        <KPICard
+          label="Running"
+          value={String(runningCalculations)}
+          icon={<ClockIcon className="h-8 w-8" />}
+          change={runningCalculations > 0 ? {
+            value: 'In progress',
+            trend: 'neutral' as const,
+          } : undefined}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Completed</h2>
-            <p className="text-3xl font-bold text-success">{completedCalculations}</p>
-            <p className="text-sm text-gray-500">Successful</p>
-          </div>
-        </div>
+        <KPICard
+          label="Completed"
+          value={String(completedCalculations)}
+          icon={<CheckCircleIcon className="h-8 w-8" />}
+          change={completedCalculations > 0 ? {
+            value: 'Successful',
+            trend: 'up' as const,
+          } : undefined}
+        />
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Failed</h2>
-            <p className="text-3xl font-bold text-error">{failedCalculations}</p>
-            <p className="text-sm text-gray-500">Need attention</p>
-          </div>
-        </div>
+        <KPICard
+          label="Failed"
+          value={String(failedCalculations)}
+          icon={<ExclamationCircleIcon className="h-8 w-8" />}
+          change={failedCalculations > 0 ? {
+            value: 'Need attention',
+            trend: 'down' as const,
+          } : undefined}
+        />
       </div>
 
       {calculations && calculations.length > 0 ? (
         <CalculationsTable calculations={calculations} teamSlug={teamSlug} onUpdate={mutate} />
       ) : (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title">No calculations found</h2>
-            <p className="text-gray-600">
-              Get started by running your first calculation.
-            </p>
-            <Button
-              color="primary"
-              size="md"
-              className="mt-4"
-              onClick={() => router.push('/calculations/new')}
-            >
-              Run Your First Calculation
-            </Button>
-          </div>
-        </div>
+        <Card variant="elevated">
+          <CardBody>
+            <div className="text-center py-12">
+              <CalculatorIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No calculations found</h2>
+              <p className="text-gray-600 mb-6">
+                Get started by running your first batch calculation to adjust item prices.
+              </p>
+              <Button
+                variant="primary"
+                size="lg"
+                leftIcon={<PlusIcon className="h-5 w-5" />}
+                onClick={() => router.push('/calculations/new')}
+              >
+                Run Your First Calculation
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );

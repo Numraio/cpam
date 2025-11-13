@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { Button, Input, Card, CardBody } from '@/components/ui';
+import { PlusIcon, MagnifyingGlassIcon, CubeIcon } from '@heroicons/react/24/outline';
 import useItems from '@/hooks/useItems';
 import { Loading } from '@/components/shared';
 import ItemsTable from '@/components/items/ItemsTable';
@@ -21,9 +21,11 @@ const ItemsPage: NextPageWithLayout = () => {
   if (isError) {
     return (
       <div className="p-6">
-        <div className="alert alert-error">
-          <span>Failed to load items. Please try again.</span>
-        </div>
+        <Card variant="outlined" className="bg-error-light/10 border-error">
+          <CardBody>
+            <p className="text-error font-medium">Failed to load items. Please try again.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -31,9 +33,11 @@ const ItemsPage: NextPageWithLayout = () => {
   if (!teamSlug) {
     return (
       <div className="p-6">
-        <div className="alert alert-warning">
-          <span>No team found. Please create or join a team first.</span>
-        </div>
+        <Card variant="outlined" className="bg-warning-light/10 border-warning">
+          <CardBody>
+            <p className="text-warning-dark font-medium">No team found. Please create or join a team first.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -56,51 +60,53 @@ const ItemsPage: NextPageWithLayout = () => {
             Manage portfolio items and their price adjustment formulas
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            color="primary"
-            size="md"
-            startIcon={<PlusIcon className="h-5 w-5" />}
-            onClick={() => router.push('/items/new')}
-          >
-            Add Item
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          size="md"
+          leftIcon={<PlusIcon className="h-5 w-5" />}
+          onClick={() => router.push('/items/new')}
+        >
+          Add Item
+        </Button>
       </div>
 
-      <div className="mb-4">
-        <input
+      <div className="mb-6">
+        <Input
           type="text"
           placeholder="Search items by SKU, name, or description..."
-          className="input input-bordered w-full max-w-md"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          rightIcon={<MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />}
+          className="max-w-md"
         />
       </div>
 
       {filteredItems && filteredItems.length > 0 ? (
         <ItemsTable items={filteredItems} teamSlug={teamSlug} onDelete={mutate} />
       ) : (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title">No items found</h2>
-            <p className="text-gray-600">
-              {searchQuery
-                ? 'No items match your search criteria.'
-                : 'Get started by adding your first item.'}
-            </p>
-            {!searchQuery && (
-              <Button
-                color="primary"
-                size="md"
-                className="mt-4"
-                onClick={() => router.push('/items/new')}
-              >
-                Add Your First Item
-              </Button>
-            )}
-          </div>
-        </div>
+        <Card variant="elevated">
+          <CardBody>
+            <div className="text-center py-12">
+              <CubeIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No items found</h2>
+              <p className="text-gray-600 mb-6">
+                {searchQuery
+                  ? 'No items match your search criteria. Try adjusting your search.'
+                  : 'Get started by adding your first item to the portfolio.'}
+              </p>
+              {!searchQuery && (
+                <Button
+                  variant="primary"
+                  size="lg"
+                  leftIcon={<PlusIcon className="h-5 w-5" />}
+                  onClick={() => router.push('/items/new')}
+                >
+                  Add Your First Item
+                </Button>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );
