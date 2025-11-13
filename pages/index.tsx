@@ -4,7 +4,8 @@ import type { NextPageWithLayout } from 'types';
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import env from '@/lib/env';
-import Head from 'next/head';
+import SEO from '@/components/SEO';
+import { getOrganizationSchema, getSoftwareApplicationSchema } from '@/lib/seo';
 import { Button } from '@/components/ui';
 import {
   ChartBarIcon,
@@ -62,20 +63,10 @@ const Home: NextPageWithLayout = () => {
 
   return (
     <>
-      <Head>
-        <title>CPAM - Commodity Price Adjustment Management Platform</title>
-        <meta
-          name="description"
-          content="Enterprise-grade commodity pricing platform. Automate price adjustments, manage exposure, and make confident pricing decisions with CPAM."
-        />
-        <meta property="og:title" content="CPAM - Commodity Price Adjustment Management" />
-        <meta
-          property="og:description"
-          content="Automate commodity price adjustments with dynamic formulas, scenario analysis, and real-time analytics."
-        />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Head>
+      <SEO
+        pageKey="home"
+        structuredData={[getOrganizationSchema(), getSoftwareApplicationSchema()]}
+      />
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">

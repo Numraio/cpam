@@ -1,0 +1,27 @@
+# Allow all crawlers to access public pages
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /blog
+Allow: /docs
+
+# Disallow authenticated/private pages
+Disallow: /dashboard
+Disallow: /items
+Disallow: /index-series
+Disallow: /pams
+Disallow: /scenarios
+Disallow: /calculations
+Disallow: /approvals
+Disallow: /reports
+Disallow: /settings
+Disallow: /teams
+Disallow: /api/
+
+# Crawl delay (milliseconds between requests)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://cpam.example.com/api/sitemap.xml
