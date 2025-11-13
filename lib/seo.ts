@@ -30,14 +30,14 @@ export interface SEOConfig {
 
 // Default site configuration
 export const defaultSEO: SEOConfig = {
-  title: 'CPAM - Commodity Price Adjustment Management',
+  title: 'CPAM - Contract Price Adjustment Management',
   description:
-    'Enterprise-grade commodity pricing platform. Automate price adjustments, manage exposure, and make confident pricing decisions.',
+    'Enterprise platform for automating contract-based pricing. Link SKUs to contracts, define Price Adjustment Mechanisms, and automate calculations.',
   openGraph: {
     type: 'website',
     siteName: 'CPAM',
     image: '/og-image.png',
-    imageAlt: 'CPAM - Commodity Price Adjustment Management Platform',
+    imageAlt: 'CPAM - Contract Price Adjustment Management Platform',
   },
   twitter: {
     card: 'summary_large_image',
@@ -49,24 +49,24 @@ export const defaultSEO: SEOConfig = {
 // SEO configurations for specific pages
 export const pageSEO: Record<string, SEOConfig> = {
   home: {
-    title: 'CPAM - Commodity Price Adjustment Management Platform',
+    title: 'CPAM - Contract Price Adjustment Management Platform',
     description:
-      'Enterprise-grade commodity pricing platform. Automate price adjustments, manage exposure, and make confident pricing decisions with CPAM.',
+      'Enterprise platform for automating contract-based pricing. Link SKUs to contracts, define Price Adjustment Mechanisms, and automate calculations with confidence.',
     openGraph: {
       type: 'website',
-      title: 'CPAM - Master Your Commodity Pricing',
+      title: 'CPAM - Automate Your Contract Pricing',
       description:
-        'Automate commodity price adjustments with dynamic formulas, scenario analysis, and real-time analytics.',
+        'Automate contract price adjustments with visual PAM builder, what-if scenarios, and batch calculations across thousands of SKUs.',
     },
   },
   dashboard: {
     title: 'Dashboard - CPAM',
-    description: 'View your commodity pricing overview, KPIs, and recent activity.',
+    description: 'View your contract pricing overview, KPIs, and recent activity.',
     noindex: true,
   },
   items: {
     title: 'Items - CPAM',
-    description: 'Manage your commodity portfolio items and pricing formulas.',
+    description: 'Manage SKUs and product pricing linked to contracts.',
     noindex: true,
   },
   'index-series': {
@@ -81,18 +81,18 @@ export const pageSEO: Record<string, SEOConfig> = {
   },
   scenarios: {
     title: 'Scenarios - CPAM',
-    description: 'Run what-if scenario analysis on your commodity pricing.',
+    description: 'Run what-if scenario analysis on contract pricing before applying changes.',
     noindex: true,
   },
   calculations: {
     title: 'Calculations - CPAM',
-    description: 'Manage batch price calculation runs and view results.',
+    description: 'Manage batch price calculation runs across contracts and SKUs.',
     noindex: true,
   },
   pricing: {
     title: 'Pricing - CPAM',
     description:
-      'Transparent pricing plans for CPAM. From startups to enterprise, find the right plan for your commodity pricing needs.',
+      'Transparent pricing plans for CPAM. From startups to enterprise, find the right plan for your contract pricing needs.',
     openGraph: {
       type: 'website',
       title: 'CPAM Pricing - Plans for Every Business Size',
@@ -101,7 +101,7 @@ export const pageSEO: Record<string, SEOConfig> = {
   about: {
     title: 'About Us - CPAM',
     description:
-      'Learn about CPAM, our mission to simplify commodity pricing, and the team building the future of price management.',
+      'Learn about CPAM, our mission to simplify contract pricing automation, and the team building the future of price management.',
     openGraph: {
       type: 'website',
       title: 'About CPAM - Our Mission and Team',
@@ -110,7 +110,7 @@ export const pageSEO: Record<string, SEOConfig> = {
   contact: {
     title: 'Contact Us - CPAM',
     description:
-      'Get in touch with CPAM. Request a demo, ask questions, or speak with our sales team.',
+      'Get in touch with CPAM. Request a demo, ask questions, or speak with our sales team about contract pricing automation.',
     openGraph: {
       type: 'website',
       title: 'Contact CPAM - Request a Demo',
@@ -119,16 +119,16 @@ export const pageSEO: Record<string, SEOConfig> = {
   blog: {
     title: 'Blog - CPAM',
     description:
-      'Latest insights on commodity pricing, product updates, and industry best practices from the CPAM team.',
+      'Latest insights on contract pricing, product updates, and best practices for automating Price Adjustment Mechanisms.',
     openGraph: {
       type: 'website',
-      title: 'CPAM Blog - Commodity Pricing Insights',
+      title: 'CPAM Blog - Contract Pricing Insights',
     },
   },
   docs: {
     title: 'Documentation - CPAM',
     description:
-      'Complete documentation for CPAM. API reference, user guides, tutorials, and integration examples.',
+      'Complete documentation for CPAM. API reference, PAM builder guides, tutorials, and integration examples.',
     openGraph: {
       type: 'website',
       title: 'CPAM Documentation - API & User Guides',
@@ -166,7 +166,7 @@ export function getOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'CPAM',
-    description: 'Commodity Price Adjustment Management Platform',
+    description: 'Contract Price Adjustment Management Platform',
     url: 'https://cpam.example.com',
     logo: 'https://cpam.example.com/logo.png',
     sameAs: [
@@ -192,7 +192,7 @@ export function getSoftwareApplicationSchema() {
     name: 'CPAM',
     applicationCategory: 'BusinessApplication',
     description:
-      'Enterprise commodity price adjustment management platform with automated calculations and scenario analysis.',
+      'Enterprise contract pricing platform. Automate SKU price adjustments with contract-based Price Adjustment Mechanisms, what-if scenarios, and batch calculations.',
     operatingSystem: 'Web',
     offers: {
       '@type': 'Offer',

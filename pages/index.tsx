@@ -21,44 +21,44 @@ import {
 const Home: NextPageWithLayout = () => {
   const features = [
     {
-      name: 'Dynamic Price Adjustment',
-      description: 'Build sophisticated pricing formulas using our visual PAM (Price Adjustment Methodology) builder with real-time index data.',
+      name: 'Contract-Based Pricing',
+      description: 'Link products to contracts with customizable Price Adjustment Mechanisms (PAMs). Automatically adjust SKU prices based on contract terms and index movements.',
       icon: ChartBarIcon,
     },
     {
-      name: 'Portfolio Management',
-      description: 'Manage thousands of commodity items with flexible contract terms, FX policies, and custom pricing mechanisms.',
+      name: 'Visual PAM Builder',
+      description: 'Build sophisticated pricing formulas with our drag-and-drop interface. Combine index data, transformations, conversions, and controls without writing code.',
       icon: CubeIcon,
     },
     {
-      name: 'Scenario Analysis',
-      description: 'Run what-if scenarios to test pricing strategies before committing. Override prices, simulate market conditions.',
+      name: 'What-If Scenarios',
+      description: 'Test pricing changes before applying them. Override index prices, simulate market movements, and compare outcomes across your contracts.',
       icon: BeakerIcon,
     },
     {
       name: 'Batch Calculations',
-      description: 'Process bulk price adjustments across your entire portfolio with automated calculation workflows.',
+      description: 'Process price adjustments for thousands of SKUs in minutes. Run calculations on-demand or schedule them to match your contract terms.',
       icon: BoltIcon,
     },
     {
-      name: 'Enterprise Security',
-      description: 'SOC2 compliant with role-based access control, audit trails, and comprehensive compliance features.',
+      name: 'Enterprise Grade',
+      description: 'SOC2 compliant with role-based access control, approval workflows, and comprehensive audit trails for every price change.',
       icon: ShieldCheckIcon,
     },
     {
-      name: 'Real-Time Analytics',
-      description: 'Monitor exposure, track trends, and make data-driven decisions with comprehensive dashboards and reports.',
+      name: 'Real-Time Insights',
+      description: 'Monitor contract exposure, track price trends, and identify pricing anomalies with built-in dashboards and analytics.',
       icon: ArrowTrendingUpIcon,
     },
   ];
 
   const benefits = [
-    'Reduce pricing errors by 95% with automated calculations',
+    'Reduce pricing errors by 95% with automated contract calculations',
     'Save 20+ hours per month on manual price adjustments',
-    'Gain real-time visibility into commodity exposure',
-    'Scale from hundreds to millions of items effortlessly',
-    'Ensure compliance with built-in audit trails',
-    'Integrate with existing ERP and data providers',
+    'Gain real-time visibility into contract pricing exposure',
+    'Scale from hundreds to millions of SKUs effortlessly',
+    'Ensure compliance with built-in approval workflows and audit trails',
+    'Integrate with existing ERP systems and price index providers',
   ];
 
   return (
@@ -101,12 +101,12 @@ const Home: NextPageWithLayout = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
-              Master Your{' '}
-              <span className="text-primary-600">Commodity Pricing</span>
+              Automate Your{' '}
+              <span className="text-primary-600">Contract Pricing</span>
             </h1>
             <p className="text-xl sm:text-2xl text-gray-600 mb-10 leading-relaxed">
-              Enterprise-grade platform for automating price adjustments, managing exposure,
-              and making confident pricing decisions across your commodity portfolio.
+              Enterprise platform for managing contract-based price adjustments.
+              Link SKUs to contracts, define pricing mechanisms, and automate calculations with confidence.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -150,11 +150,11 @@ const Home: NextPageWithLayout = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Everything You Need to Manage Commodity Pricing
+              Everything You Need for Contract Pricing Management
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From formula builders to compliance reporting, CPAM provides all the tools
-              you need for sophisticated pricing management.
+              From visual PAM builders to approval workflows, CPAM provides all the tools
+              you need to manage contract-based pricing at scale.
             </p>
           </div>
 
@@ -188,8 +188,8 @@ const Home: NextPageWithLayout = () => {
                 Why Choose CPAM?
               </h2>
               <p className="text-xl text-gray-600 mb-8">
-                Join leading commodity traders and procurement teams who trust CPAM
-                to manage billions in pricing exposure.
+                Join procurement and sales teams who trust CPAM
+                to automate contract pricing across thousands of SKUs.
               </p>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -207,8 +207,8 @@ const Home: NextPageWithLayout = () => {
                     What Our Customers Say
                   </h3>
                   <blockquote className="text-lg text-gray-700 mb-4">
-                    "CPAM transformed how we manage commodity pricing. What used to take days
-                    now takes minutes. The formula builder is intuitive and powerful."
+                    "CPAM transformed how we manage contract pricing. What used to take days
+                    now takes minutes. The PAM builder makes complex pricing formulas simple."
                   </blockquote>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -233,7 +233,7 @@ const Home: NextPageWithLayout = () => {
             Ready to Transform Your Pricing?
           </h2>
           <p className="text-xl text-primary-100 mb-10">
-            Join thousands of pricing professionals who trust CPAM for their commodity price management.
+            Join pricing professionals who trust CPAM for automated contract price management.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -263,7 +263,7 @@ const Home: NextPageWithLayout = () => {
             <div>
               <div className="text-2xl font-bold text-white mb-4">CPAM</div>
               <p className="text-sm">
-                Enterprise commodity price adjustment management platform.
+                Contract Price Adjustment Management platform for automating SKU pricing.
               </p>
             </div>
             <div>
