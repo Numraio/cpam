@@ -207,6 +207,62 @@ Run integration tests:
 npm test lib/integrations/bls
 ```
 
+## Data Ingestion
+
+### Ingestion Service
+
+```typescript
+import { ingestBLSData, backfillBLSData } from '@/lib/integrations/bls';
+
+// Ingest latest data (last 2 years)
+const result = await ingestBLSData(
+  'indexSeriesId',
+  'CUUR0000SA0',
+  'tenantId',
+  { yearsBack: 2 }
+);
+
+// Backfill historical data (10 years)
+const backfillResult = await backfillBLSData(
+  'indexSeriesId',
+  'CUUR0000SA0',
+  'tenantId',
+  10
+);
+```
+
+### Scheduled Job
+
+Run daily to fetch latest data for all tenants:
+
+```bash
+# Via npm script
+npm run job:bls-ingest
+
+# Via ts-node
+npx ts-node lib/jobs/ingest-bls.ts
+```
+
+### API Endpoints
+
+#### POST /api/integrations/bls/ingest
+
+Trigger ingestion for a specific IndexSeries.
+
+**Request:**
+```json
+{
+  "indexSeriesId": "series-id",
+  "action": "ingest",  // or "backfill" or "status"
+  "yearsBack": 10      // for backfill
+}
+```
+
+**Actions:**
+- `ingest` - Fetch latest data (incremental)
+- `backfill` - Fetch historical data
+- `status` - Get ingestion status
+
 ## References
 
 - BLS API Documentation: https://www.bls.gov/developers/
@@ -216,9 +272,10 @@ npm test lib/integrations/bls
 
 ## Future Enhancements
 
-- [ ] Automated scheduled ingestion (daily/weekly jobs)
+- [x] Automated scheduled ingestion (daily/weekly jobs)
+- [x] Historical backfill on series creation
 - [ ] Data revision handling
-- [ ] Historical backfill on series creation
 - [ ] UI for series selection and preview
 - [ ] Webhook notifications for new data
 - [ ] Advanced caching strategy
+- [ ] Cron job scheduling (e.g., node-cron or external scheduler)
