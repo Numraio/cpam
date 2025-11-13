@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'react-daisyui';
 import { InputWithLabel } from '@/components/shared';
+import BLSSeriesSelector from '@/components/integrations/BLSSeriesSelector';
+import BLSPreviewModal from '@/components/integrations/BLSPreviewModal';
 
 interface IndexSeriesFormProps {
   initialData?: any;
@@ -20,6 +22,9 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showBLSSelector, setShowBLSSelector] = useState(false);
+  const [showBLSPreview, setShowBLSPreview] = useState(false);
+  const [selectedBLSSeries, setSelectedBLSSeries] = useState<any>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -38,10 +43,37 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Show BLS selector when BLS provider is selected
+    if (name === 'provider' && value === 'BLS') {
+      setShowBLSSelector(true);
+    } else if (name === 'provider' && value !== 'BLS') {
+      setShowBLSSelector(false);
+      setSelectedBLSSeries(null);
+    }
+
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleBLSSeriesSelect = (seriesId: string, seriesInfo: any) => {
+    setSelectedBLSSeries(seriesInfo);
+    setFormData((prev) => ({
+      ...prev,
+      seriesCode: `BLS_${seriesId}`,
+      name: seriesInfo.label,
+      description: seriesInfo.description,
+      dataType: seriesInfo.category === 'FX' ? 'FX' : 'INDEX',
+      frequency: seriesInfo.frequency === 'MONTHLY' ? 'MONTHLY' : seriesInfo.frequency === 'QUARTERLY' ? 'MONTHLY' : 'DAILY',
+    }));
+    setShowBLSPreview(true);
+  };
+
+  const handleBLSPreviewConfirm = () => {
+    setShowBLSPreview(false);
+    // Form data is already populated from handleBLSSeriesSelect
   };
 
   const validate = () => {
@@ -143,6 +175,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
                 required
               >
                 <option value="MANUAL">Manual Entry</option>
+                <option value="BLS">BLS (Bureau of Labor Statistics)</option>
                 <option value="PLATTS">Platts</option>
                 <option value="OANDA">Oanda (FX)</option>
                 <option value="ARGUS">Argus</option>
@@ -218,15 +251,34 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title">Provider Configuration</h2>
-          <div className="alert alert-info">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>
-              Provider-specific configuration (API credentials, sync schedule, field mapping)
-              will be available after creating the series.
-            </span>
-          </div>
+
+          {formData.provider === 'BLS' && showBLSSelector ? (
+            <div>
+              <div className="alert alert-info mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>
+                  Select a BLS series from the catalog below. Data will be automatically imported from the Bureau of Labor Statistics API.
+                </span>
+              </div>
+
+              <BLSSeriesSelector
+                onSelect={handleBLSSeriesSelect}
+                selectedSeriesId={selectedBLSSeries?.value}
+              />
+            </div>
+          ) : (
+            <div className="alert alert-info">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>
+                Provider-specific configuration (API credentials, sync schedule, field mapping)
+                will be available after creating the series.
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -250,6 +302,18 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
           {initialData ? 'Update Index Series' : 'Create Index Series'}
         </Button>
       </div>
+
+      {/* BLS Preview Modal */}
+      {selectedBLSSeries && (
+        <BLSPreviewModal
+          isOpen={showBLSPreview}
+          onClose={() => setShowBLSPreview(false)}
+          onConfirm={handleBLSPreviewConfirm}
+          seriesId={selectedBLSSeries.value}
+          seriesName={selectedBLSSeries.label}
+          yearsBack={2}
+        />
+      )}
     </form>
   );
 };

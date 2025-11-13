@@ -7,6 +7,7 @@ import { PencilIcon, ArrowLeftIcon, TrashIcon, ArrowPathIcon } from '@heroicons/
 import { Loading } from '@/components/shared';
 import useIndexSeriesDetail from '@/hooks/useIndexSeriesDetail';
 import { formatDistance } from 'date-fns';
+import BLSIngestionStatus from '@/components/integrations/BLSIngestionStatus';
 
 const IndexSeriesDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -216,18 +217,17 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
           </div>
         </div>
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Sync Status</h2>
-            <div className="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>Sync status and ingestion metrics will be displayed here when implemented.</span>
-            </div>
-          </div>
-        </div>
       </div>
+
+      {/* BLS Ingestion Status - Show for BLS provider */}
+      {indexSeries.provider === 'BLS' && (
+        <BLSIngestionStatus
+          indexSeriesId={indexSeries.id}
+          seriesCode={indexSeries.seriesCode}
+          teamSlug={teamSlug}
+          className="mt-6"
+        />
+      )}
 
       {/* Price History Chart - Placeholder */}
       <div className="card bg-base-100 shadow-xl mt-6">
