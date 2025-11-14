@@ -2,6 +2,7 @@ import { forwardRef, InputHTMLAttributes, useState } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils/cn';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion';
 
 /**
  * Input Component
@@ -89,7 +90,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div className="w-full">
-        <div className="relative">
+        <motion.div
+          className="relative"
+          animate={{ scale: isFocused ? 1.01 : 1 }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+        >
           <input
             ref={ref}
             type={type}
@@ -142,7 +147,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               <CheckCircleIcon className="h-5 w-5" />
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Error Message */}
         {error && (
@@ -232,7 +237,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <div className="w-full">
-        <div className="relative">
+        <motion.div
+          className="relative"
+          animate={{ scale: isFocused ? 1.01 : 1 }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+        >
           <textarea
             ref={ref}
             value={value}
@@ -271,7 +280,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             {label}
             {props.required && <span className="text-error ml-1">*</span>}
           </label>
-        </div>
+        </motion.div>
 
         {/* Character Count */}
         {maxLength && (
