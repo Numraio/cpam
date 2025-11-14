@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
 import { Button, Input, Card, CardBody } from '@/components/ui';
+import PageHeader from '@/components/navigation/PageHeader';
 import { PlusIcon, MagnifyingGlassIcon, CubeIcon } from '@heroicons/react/24/outline';
 import useItems from '@/hooks/useItems';
 import { Loading } from '@/components/shared';
@@ -52,23 +53,22 @@ const ItemsPage: NextPageWithLayout = () => {
   });
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Items</h1>
-          <p className="text-gray-600 mt-1">
-            Manage portfolio items and their price adjustment formulas
-          </p>
-        </div>
-        <Button
-          variant="primary"
-          size="md"
-          leftIcon={<PlusIcon className="h-5 w-5" />}
-          onClick={() => router.push('/items/new')}
-        >
-          Add Item
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title="Items"
+        subtitle="Manage portfolio items and their price adjustment formulas"
+        primaryAction={
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<PlusIcon className="h-5 w-5" />}
+            onClick={() => router.push('/items/new')}
+          >
+            Add Item
+          </Button>
+        }
+        sticky
+      />
 
       <div className="mb-6">
         <Input
@@ -108,7 +108,7 @@ const ItemsPage: NextPageWithLayout = () => {
           </CardBody>
         </Card>
       )}
-    </div>
+    </>
   );
 };
 
