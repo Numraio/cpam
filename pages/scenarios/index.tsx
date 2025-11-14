@@ -3,8 +3,9 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
-import { PlusIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/Button';
+import { Card, CardBody, KPICard } from '@/components/ui/Card';
+import { PlusIcon, ArrowPathIcon, BeakerIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import useScenarios from '@/hooks/useScenarios';
 import { Loading } from '@/components/shared';
 import ScenarioList from '@/components/scenarios/ScenarioList';
@@ -21,9 +22,11 @@ const ScenariosPage: NextPageWithLayout = () => {
   if (isError) {
     return (
       <div className="p-6">
-        <div className="alert alert-error">
-          <span>Failed to load scenarios. Please try again.</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-error">
+          <CardBody>
+            <p className="text-error font-medium">Failed to load scenarios. Please try again.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -31,9 +34,11 @@ const ScenariosPage: NextPageWithLayout = () => {
   if (!teamSlug) {
     return (
       <div className="p-6">
-        <div className="alert alert-warning">
-          <span>No team found. Please create or join a team first.</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-warning">
+          <CardBody>
+            <p className="text-warning font-medium">No team found. Please create or join a team first.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -57,27 +62,27 @@ const ScenariosPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">What-If Scenarios</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900">What-If Scenarios</h1>
+          <p className="text-gray-600 mt-2">
             Create and compare scenarios with price overrides and hedge positions
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
-            color="ghost"
+            variant="ghost"
             size="md"
-            startIcon={<ArrowPathIcon className="h-5 w-5" />}
+            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
             onClick={handleRefresh}
-            loading={isRefreshing}
+            isLoading={isRefreshing}
           >
             Refresh
           </Button>
           <Button
-            color="primary"
+            variant="primary"
             size="md"
-            startIcon={<PlusIcon className="h-5 w-5" />}
+            leftIcon={<PlusIcon className="h-5 w-5" />}
             onClick={() => router.push('/scenarios/new')}
           >
             New Scenario
@@ -86,51 +91,49 @@ const ScenariosPage: NextPageWithLayout = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Total Scenarios</h2>
-            <p className="text-3xl font-bold">{totalScenarios}</p>
-            <p className="text-sm text-gray-500">Active simulations</p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Index Overrides</h2>
-            <p className="text-3xl font-bold text-primary">{totalIndexOverrides}</p>
-            <p className="text-sm text-gray-500">Price series overridden</p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Item Overrides</h2>
-            <p className="text-3xl font-bold text-secondary">{totalItemOverrides}</p>
-            <p className="text-sm text-gray-500">Items with custom values</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <KPICard
+          title="Total Scenarios"
+          value={totalScenarios}
+          subtitle="Active simulations"
+          icon={BeakerIcon}
+        />
+        <KPICard
+          title="Index Overrides"
+          value={totalIndexOverrides}
+          subtitle="Price series overridden"
+          icon={ChartBarIcon}
+          variant="primary"
+        />
+        <KPICard
+          title="Item Overrides"
+          value={totalItemOverrides}
+          subtitle="Items with custom values"
+          icon={ChartBarIcon}
+          variant="secondary"
+        />
       </div>
 
       {scenarios && scenarios.length > 0 ? (
         <ScenarioList scenarios={scenarios} teamSlug={teamSlug} onUpdate={mutate} />
       ) : (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title">No scenarios found</h2>
-            <p className="text-gray-600">
+        <Card variant="elevated" className="border-t-4 border-t-primary">
+          <CardBody className="flex flex-col items-center text-center py-12">
+            <BeakerIcon className="h-16 w-16 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No scenarios found</h2>
+            <p className="text-gray-600 mb-6 max-w-md">
               Create your first what-if scenario to simulate price changes and hedge positions.
             </p>
             <Button
-              color="primary"
+              variant="primary"
               size="md"
-              className="mt-4"
+              leftIcon={<PlusIcon className="h-5 w-5" />}
               onClick={() => router.push('/scenarios/new')}
             >
               Create Your First Scenario
             </Button>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );
