@@ -3,12 +3,13 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import useTeams from '@/hooks/useTeams';
 import usePAMs from '@/hooks/usePAMs';
 import useIndexSeries from '@/hooks/useIndexSeries';
 import { Loading } from '@/components/shared';
+import PageHeader from '@/components/navigation/PageHeader';
 
 type ScenarioOverrides = {
   indexOverrides: {
@@ -187,23 +188,21 @@ const NewScenarioPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/scenarios')}
-        >
-          Back to Scenarios
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Create What-If Scenario</h1>
-        <p className="text-gray-600 mt-1">
-          Build a scenario to simulate price changes and analyze impact
-        </p>
-      </div>
+      <PageHeader
+        title="Create What-If Scenario"
+        subtitle="Build a scenario to simulate price changes and analyze impact"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/scenarios')}
+          >
+            Back to Scenarios
+          </Button>
+        }
+      />
 
       {/* Progress Steps */}
       <div className="mb-8">
@@ -355,22 +354,22 @@ const NewScenarioPage: NextPageWithLayout = () => {
                   <span className="label-text font-semibold">Quick Presets</span>
                 </label>
                 <div className="flex gap-2 flex-wrap">
-                  <Button size="sm" color="success" onClick={() => handleQuickPreset(10)}>
+                  <Button size="md" color="success" onClick={() => handleQuickPreset(10)}>
                     +10%
                   </Button>
-                  <Button size="sm" color="success" onClick={() => handleQuickPreset(20)}>
+                  <Button size="md" color="success" onClick={() => handleQuickPreset(20)}>
                     +20%
                   </Button>
-                  <Button size="sm" color="success" onClick={() => handleQuickPreset(30)}>
+                  <Button size="md" color="success" onClick={() => handleQuickPreset(30)}>
                     +30%
                   </Button>
-                  <Button size="sm" color="error" onClick={() => handleQuickPreset(-10)}>
+                  <Button size="md" color="error" onClick={() => handleQuickPreset(-10)}>
                     -10%
                   </Button>
-                  <Button size="sm" color="error" onClick={() => handleQuickPreset(-20)}>
+                  <Button size="md" color="error" onClick={() => handleQuickPreset(-20)}>
                     -20%
                   </Button>
-                  <Button size="sm" color="error" onClick={() => handleQuickPreset(-30)}>
+                  <Button size="md" color="error" onClick={() => handleQuickPreset(-30)}>
                     -30%
                   </Button>
                 </div>
@@ -444,7 +443,7 @@ const NewScenarioPage: NextPageWithLayout = () => {
                             <td className="font-mono">{value}</td>
                             <td>
                               <Button
-                                size="xs"
+                                size="md"
                                 color="error"
                                 onClick={() => handleRemoveIndexOverride(seriesCode, date)}
                               >
@@ -519,16 +518,16 @@ const NewScenarioPage: NextPageWithLayout = () => {
       {/* Navigation Buttons */}
       <div className="flex justify-between mt-6">
         <Button
-          color="ghost"
+          variant="ghost"
           onClick={handleBack}
           disabled={currentStep === 1}
-          startIcon={<ChevronLeftIcon className="h-4 w-4" />}
+          leftIcon={<ChevronLeftIcon className="h-5 w-5" />}
         >
           Back
         </Button>
 
         <div className="flex gap-2">
-          <Button color="ghost" onClick={() => router.push('/scenarios')}>
+          <Button variant="ghost" onClick={() => router.push('/scenarios')}>
             Cancel
           </Button>
 
@@ -536,7 +535,7 @@ const NewScenarioPage: NextPageWithLayout = () => {
             <Button
               color="primary"
               onClick={handleNext}
-              endIcon={<ChevronRightIcon className="h-4 w-4" />}
+              rightIcon={<ChevronRightIcon className="h-5 w-5" />}
             >
               Next
             </Button>
@@ -545,7 +544,7 @@ const NewScenarioPage: NextPageWithLayout = () => {
               color="primary"
               onClick={handleSubmit}
               loading={isSubmitting}
-              startIcon={<CheckIcon className="h-4 w-4" />}
+              leftIcon={<CheckIcon className="h-5 w-5" />}
             >
               Create Scenario
             </Button>

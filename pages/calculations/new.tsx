@@ -3,11 +3,12 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/shared';
 import useTeams from '@/hooks/useTeams';
 import useItems from '@/hooks/useItems';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const NewCalculationPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -100,23 +101,21 @@ const NewCalculationPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/calculations')}
-        >
-          Back to Calculations
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Start New Calculation</h1>
-        <p className="text-gray-600 mt-1">
-          Configure and run a batch price adjustment calculation
-        </p>
-      </div>
+      <PageHeader
+        title="Start New Calculation"
+        subtitle="Configure and run a batch price adjustment calculation"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/calculations')}
+          >
+            Back to Calculations
+          </Button>
+        }
+      />
 
       {error && (
         <div className="alert alert-error mb-6">
@@ -228,7 +227,7 @@ const NewCalculationPage: NextPageWithLayout = () => {
                     type="submit"
                     color="primary"
                     size="md"
-                    startIcon={<PlayIcon className="h-5 w-5" />}
+                    leftIcon={<PlayIcon className="h-5 w-5" />}
                     loading={isSubmitting}
                     disabled={isSubmitting}
                   >
@@ -236,7 +235,7 @@ const NewCalculationPage: NextPageWithLayout = () => {
                   </Button>
                   <Button
                     type="button"
-                    color="ghost"
+                    variant="ghost"
                     size="md"
                     onClick={() => router.push('/calculations')}
                     disabled={isSubmitting}

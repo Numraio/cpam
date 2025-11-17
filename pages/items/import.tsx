@@ -3,10 +3,11 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, DocumentArrowUpIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import useTeams from '@/hooks/useTeams';
 import { Loading } from '@/components/shared';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ImportItemsPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -128,23 +129,21 @@ const ImportItemsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/items')}
-        >
-          Back to Items
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Import Items from CSV</h1>
-        <p className="text-gray-600 mt-1">
-          Bulk import portfolio items from a CSV file
-        </p>
-      </div>
+      <PageHeader
+        title="Import Items from CSV"
+        subtitle="Bulk import portfolio items from a CSV file"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/items')}
+          >
+            Back to Items
+          </Button>
+        }
+      />
 
       {error && (
         <div className="alert alert-error mb-6">
@@ -214,7 +213,7 @@ const ImportItemsPage: NextPageWithLayout = () => {
                 <Button
                   color="primary"
                   size="md"
-                  startIcon={<DocumentArrowUpIcon className="h-5 w-5" />}
+                  leftIcon={<DocumentArrowUpIcon className="h-5 w-5" />}
                   onClick={handleUpload}
                   loading={isUploading}
                   disabled={!file || isUploading}
@@ -249,9 +248,9 @@ const ImportItemsPage: NextPageWithLayout = () => {
               </div>
               <div className="card-actions justify-start mt-4">
                 <Button
-                  size="sm"
-                  color="ghost"
-                  startIcon={<ArrowDownTrayIcon className="h-4 w-4" />}
+                  size="md"
+                  variant="ghost"
+                  leftIcon={<ArrowDownTrayIcon className="h-5 w-5" />}
                   onClick={downloadTemplate}
                 >
                   Download Template

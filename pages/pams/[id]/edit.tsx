@@ -3,10 +3,11 @@ import { AccountLayout } from '@/components/layouts';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Loading } from '@/components/shared';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import GraphBuilder from '@/components/pam/GraphBuilder';
 import usePAMDetail from '@/hooks/usePAMDetail';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const EditPAMPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -108,24 +109,23 @@ const EditPAMPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push(`/pams/${pam.id}`)}
-        >
-          Back to PAM
-        </Button>
-      </div>
+      <PageHeader
+        title="Edit Price Adjustment Methodology"
+        subtitle="Modify the formula graph to calculate adjusted prices"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push(`/pams/${pam.id}`)}
+          >
+            Back to PAM
+          </Button>
+        }
+      />
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Edit Price Adjustment Methodology</h1>
-          <p className="text-gray-600 mt-1">
-            Modify the formula graph to calculate adjusted prices
-          </p>
-        </div>
 
         {/* Errors */}
         {errors.length > 0 && (
@@ -195,7 +195,7 @@ const EditPAMPage: NextPageWithLayout = () => {
         <div className="flex justify-end gap-2">
           <Button
             type="button"
-            color="ghost"
+            variant="ghost"
             onClick={() => router.push(`/pams/${pam.id}`)}
           >
             Cancel
@@ -203,7 +203,7 @@ const EditPAMPage: NextPageWithLayout = () => {
           <Button
             type="submit"
             color="primary"
-            startIcon={<CheckIcon className="h-4 w-4" />}
+            leftIcon={<CheckIcon className="h-5 w-5" />}
             loading={isSubmitting}
           >
             Save Changes

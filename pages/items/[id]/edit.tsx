@@ -3,11 +3,12 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import ItemForm from '@/components/items/ItemForm';
 import useItem from '@/hooks/useItem';
 import { Loading } from '@/components/shared';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const EditItemPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -56,21 +57,21 @@ const EditItemPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push(`/items/${id}`)}
-        >
-          Back to Item
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Edit Item</h1>
-        <p className="text-gray-600 mt-1 font-mono text-sm">SKU: {item.sku}</p>
-      </div>
+      <PageHeader
+        title="Edit Item"
+        subtitle={`SKU: ${item.sku}`}
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push(`/items/${id}`)}
+          >
+            Back to Item
+          </Button>
+        }
+      />
 
       {error && (
         <div className="alert alert-error mb-6">

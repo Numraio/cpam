@@ -8,6 +8,7 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import { Loading } from '@/components/shared';
 import { KPICard, Card, CardHeader, CardBody } from '@/components/ui';
+import PageHeader from '@/components/navigation/PageHeader';
 import {
   CubeIcon,
   CurrencyDollarIcon,
@@ -36,10 +37,11 @@ const Dashboard: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">CPAM Dashboard</h1>
-        <p className="text-gray-600 mt-1">Overview of your pricing and exposure management</p>
-      </div>
+      <PageHeader
+        title="CPAM Dashboard"
+        subtitle="Overview of your pricing and exposure management"
+        sticky
+      />
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

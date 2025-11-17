@@ -1,11 +1,12 @@
 import type { NextPageWithLayout } from '@/types';
 import { AccountLayout } from '@/components/layouts';
 import { useState } from 'react';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import GraphBuilder from '@/components/pam/GraphBuilder';
 import useTeams from '@/hooks/useTeams';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const NewPAMPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -82,24 +83,23 @@ const NewPAMPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/pams')}
-        >
-          Back to PAMs
-        </Button>
-      </div>
+      <PageHeader
+        title="Create Price Adjustment Methodology"
+        subtitle="Build a formula graph to calculate adjusted prices"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/pams')}
+          >
+            Back to PAMs
+          </Button>
+        }
+      />
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Create Price Adjustment Methodology</h1>
-          <p className="text-gray-600 mt-1">
-            Build a formula graph to calculate adjusted prices
-          </p>
-        </div>
 
         {/* Errors */}
         {errors.length > 0 && (
@@ -169,7 +169,7 @@ const NewPAMPage: NextPageWithLayout = () => {
         <div className="flex justify-end gap-2">
           <Button
             type="button"
-            color="ghost"
+            variant="ghost"
             onClick={() => router.push('/pams')}
           >
             Cancel
@@ -177,7 +177,7 @@ const NewPAMPage: NextPageWithLayout = () => {
           <Button
             type="submit"
             color="primary"
-            startIcon={<CheckIcon className="h-4 w-4" />}
+            leftIcon={<CheckIcon className="h-5 w-5" />}
             loading={isSubmitting}
           >
             Create PAM
