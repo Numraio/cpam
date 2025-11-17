@@ -5,8 +5,9 @@ import { AccountLayout } from '@/components/layouts';
 import { useApprovals } from '@/hooks/useApprovals';
 import { Loading } from '@/components/shared';
 import ApprovalQueue from '@/components/approvals/ApprovalQueue';
-import { Button } from 'react-daisyui';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/Button';
+import { KPICard } from '@/components/ui/KPICard';
+import { ArrowPathIcon, ClockIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 const ApprovalsPage: NextPageWithLayout = () => {
   const [statusFilter, setStatusFilter] = useState('PENDING');
@@ -25,73 +26,87 @@ const ApprovalsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Approvals</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900">Approvals</h1>
+          <p className="text-gray-600 mt-2">
             Review and approve or reject changes
           </p>
         </div>
         <Button
-          color="ghost"
+          variant="ghost"
           size="md"
-          startIcon={<ArrowPathIcon className="h-5 w-5" />}
+          leftIcon={<ArrowPathIcon className="h-5 w-5" />}
           onClick={handleRefresh}
-          loading={isRefreshing}
+          isLoading={isRefreshing}
         >
           Refresh
         </Button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Pending</h2>
-            <p className="text-3xl font-bold text-warning">{pendingCount}</p>
-            <p className="text-sm text-gray-500">Awaiting review</p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Approved</h2>
-            <p className="text-3xl font-bold text-success">{approvedCount}</p>
-            <p className="text-sm text-gray-500">Accepted</p>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-sm">Rejected</h2>
-            <p className="text-3xl font-bold text-error">{rejectedCount}</p>
-            <p className="text-sm text-gray-500">Declined</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <KPICard
+          title="Pending"
+          value={pendingCount}
+          subtitle="Awaiting review"
+          icon={<ClockIcon className="h-6 w-6" />}
+          variant="warning"
+        />
+        <KPICard
+          title="Approved"
+          value={approvedCount}
+          subtitle="Accepted"
+          icon={<CheckCircleIcon className="h-6 w-6" />}
+          variant="success"
+        />
+        <KPICard
+          title="Rejected"
+          value={rejectedCount}
+          subtitle="Declined"
+          icon={<XCircleIcon className="h-6 w-6" />}
+          variant="error"
+        />
       </div>
 
       {/* Filter Tabs */}
-      <div className="tabs tabs-boxed mb-6">
+      <div className="inline-flex rounded-lg bg-gray-100 p-1 mb-6">
         <button
-          className={`tab ${statusFilter === 'PENDING' ? 'tab-active' : ''}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            statusFilter === 'PENDING'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
           onClick={() => setStatusFilter('PENDING')}
         >
           Pending ({pendingCount})
         </button>
         <button
-          className={`tab ${statusFilter === 'APPROVED' ? 'tab-active' : ''}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            statusFilter === 'APPROVED'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
           onClick={() => setStatusFilter('APPROVED')}
         >
           Approved ({approvedCount})
         </button>
         <button
-          className={`tab ${statusFilter === 'REJECTED' ? 'tab-active' : ''}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            statusFilter === 'REJECTED'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
           onClick={() => setStatusFilter('REJECTED')}
         >
           Rejected ({rejectedCount})
         </button>
         <button
-          className={`tab ${statusFilter === 'ALL' ? 'tab-active' : ''}`}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            statusFilter === 'ALL'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
           onClick={() => setStatusFilter('ALL')}
         >
           All

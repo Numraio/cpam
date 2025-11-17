@@ -4,7 +4,8 @@ import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
 import { Button } from '@/components/ui/Button';
-import { Card, CardBody, KPICard } from '@/components/ui/Card';
+import { Card, CardBody } from '@/components/ui/Card';
+import { KPICard } from '@/components/ui/KPICard';
 import { PlusIcon, ArrowPathIcon, BeakerIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import useScenarios from '@/hooks/useScenarios';
 import { Loading } from '@/components/shared';
@@ -96,20 +97,20 @@ const ScenariosPage: NextPageWithLayout = () => {
           title="Total Scenarios"
           value={totalScenarios}
           subtitle="Active simulations"
-          icon={BeakerIcon}
+          icon={<BeakerIcon className="h-6 w-6" />}
         />
         <KPICard
           title="Index Overrides"
           value={totalIndexOverrides}
           subtitle="Price series overridden"
-          icon={ChartBarIcon}
+          icon={<ChartBarIcon className="h-6 w-6" />}
           variant="primary"
         />
         <KPICard
           title="Item Overrides"
           value={totalItemOverrides}
           subtitle="Items with custom values"
-          icon={ChartBarIcon}
+          icon={<ChartBarIcon className="h-6 w-6" />}
           variant="secondary"
         />
       </div>
