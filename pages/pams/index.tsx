@@ -9,6 +9,7 @@ import { PlusIcon, ArrowPathIcon, CubeIcon } from '@heroicons/react/24/outline';
 import usePAMs from '@/hooks/usePAMs';
 import { useRouter } from 'next/router';
 import PAMList from '@/components/pam/PAMList';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const PAMsPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -46,23 +47,11 @@ const PAMsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Price Adjustment Methodologies</h1>
-          <p className="text-gray-600 mt-2">
-            Build formula graphs for calculating adjusted prices
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            size="md"
-            variant="ghost"
-            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
-            onClick={handleRefresh}
-            isLoading={isRefreshing}
-          >
-            Refresh
-          </Button>
+      <PageHeader
+        title="Price Adjustment Methodologies"
+        subtitle="Build formula graphs for calculating adjusted prices"
+        sticky
+        primaryAction={
           <Button
             size="md"
             variant="primary"
@@ -71,8 +60,19 @@ const PAMsPage: NextPageWithLayout = () => {
           >
             Create PAM
           </Button>
-        </div>
-      </div>
+        }
+        secondaryActions={
+          <Button
+            size="md"
+            variant="ghost"
+            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
+            onClick={handleRefresh}
+            loading={isRefreshing}
+          >
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

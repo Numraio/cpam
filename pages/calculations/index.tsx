@@ -8,6 +8,7 @@ import { PlusIcon, ArrowPathIcon, CalculatorIcon, ClockIcon, CheckCircleIcon, Ex
 import useCalculations from '@/hooks/useCalculations';
 import { Loading } from '@/components/shared';
 import CalculationsTable from '@/components/calculations/CalculationsTable';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const CalculationsPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -56,14 +57,21 @@ const CalculationsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Calculations</h1>
-          <p className="text-gray-600 mt-1">
-            Manage batch calculations and view results
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <PageHeader
+        title="Calculations"
+        subtitle="Manage batch calculations and view results"
+        sticky
+        primaryAction={
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<PlusIcon className="h-5 w-5" />}
+            onClick={() => router.push('/calculations/new')}
+          >
+            New Calculation
+          </Button>
+        }
+        secondaryActions={
           <Button
             variant="ghost"
             size="md"
@@ -73,16 +81,8 @@ const CalculationsPage: NextPageWithLayout = () => {
           >
             Refresh
           </Button>
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<PlusIcon className="h-5 w-5" />}
-            onClick={() => router.push('/calculations/new')}
-          >
-            New Calculation
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
