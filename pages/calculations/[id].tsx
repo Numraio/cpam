@@ -2,11 +2,12 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, ArrowDownTrayIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/shared';
 import useCalculationDetail from '@/hooks/useCalculationDetail';
 import { formatDistance } from 'date-fns';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const CalculationDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -88,15 +89,6 @@ const CalculationDetailPage: NextPageWithLayout = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      QUEUED: 'badge-warning',
-      RUNNING: 'badge-info',
-      COMPLETED: 'badge-success',
-      FAILED: 'badge-error',
-    };
-    return badges[status] || 'badge-ghost';
-  };
 
   const getDuration = () => {
     if (!calculation.startedAt) return 'Not started';
@@ -116,59 +108,80 @@ const CalculationDetailPage: NextPageWithLayout = () => {
 
   const resultCount = results?.length || 0;
 
+  const getStatusBadge = () => {
+    const statusClasses = {
+      QUEUED: 'bg-warning-light/20 text-warning',
+      RUNNING: 'bg-info-light/20 text-info',
+      COMPLETED: 'bg-success-light/20 text-success',
+      FAILED: 'bg-error-light/20 text-error',
+    };
+    const className = statusClasses[calculation.status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-700';
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}>
+        {calculation.status}
+      </span>
+    );
+  };
+
+  const getPrimaryAction = () => {
+    if (calculation.status === 'COMPLETED') {
+      return (
+        <Button
+          variant="primary"
+          size="md"
+          leftIcon={<ArrowDownTrayIcon className="h-5 w-5" />}
+          onClick={handleExport}
+        >
+          Export Results
+        </Button>
+      );
+    }
+    if (calculation.status === 'FAILED') {
+      return (
+        <Button
+          variant="secondary"
+          size="md"
+          leftIcon={<ArrowPathIcon className="h-5 w-5" />}
+          onClick={handleRetry}
+        >
+          Retry
+        </Button>
+      );
+    }
+    if (calculation.status === 'QUEUED' || calculation.status === 'RUNNING') {
+      return (
+        <Button
+          variant="danger"
+          size="md"
+          leftIcon={<XMarkIcon className="h-5 w-5" />}
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/calculations')}
-        >
-          Back to Calculations
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Calculation Details</h1>
-          <p className="text-gray-600 mt-1 font-mono text-sm">
-            ID: {calculation.id}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {calculation.status === 'COMPLETED' && (
-            <Button
-              color="primary"
-              size="md"
-              startIcon={<ArrowDownTrayIcon className="h-5 w-5" />}
-              onClick={handleExport}
-            >
-              Export Results
-            </Button>
-          )}
-          {calculation.status === 'FAILED' && (
-            <Button
-              color="warning"
-              size="md"
-              startIcon={<ArrowPathIcon className="h-5 w-5" />}
-              onClick={handleRetry}
-            >
-              Retry
-            </Button>
-          )}
-          {(calculation.status === 'QUEUED' || calculation.status === 'RUNNING') && (
-            <Button
-              color="error"
-              size="md"
-              startIcon={<XMarkIcon className="h-5 w-5" />}
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Calculation Details"
+        subtitle={`ID: ${calculation.id} • ${resultCount} results • Started ${calculation.startedAt ? formatDistance(new Date(calculation.startedAt), new Date(), { addSuffix: true }) : 'Not started'}`}
+        sticky
+        statusBadge={getStatusBadge()}
+        primaryAction={getPrimaryAction()}
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/calculations')}
+          >
+            Back to Calculations
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -176,9 +189,7 @@ const CalculationDetailPage: NextPageWithLayout = () => {
           <div className="card-body">
             <h2 className="card-title text-sm">Status</h2>
             <p className="text-2xl">
-              <span className={`badge ${getStatusBadge(calculation.status)}`}>
-                {calculation.status}
-              </span>
+              {getStatusBadge()}
             </p>
           </div>
         </div>

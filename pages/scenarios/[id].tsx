@@ -2,11 +2,12 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { ArrowLeftIcon, PencilIcon, ArrowsRightLeftIcon, BeakerIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/shared';
 import useScenarioDetail from '@/hooks/useScenarioDetail';
 import { formatDistance } from 'date-fns';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ScenarioDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -90,60 +91,57 @@ const ScenarioDetailPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/scenarios')}
-        >
-          Back to Scenarios
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{scenario.name}</h1>
-          <p className="text-gray-600 mt-1">{scenario.description || 'No description'}</p>
-          <p className="text-gray-500 mt-2 text-sm font-mono">
-            ID: {scenario.id}
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title={scenario.name}
+        subtitle={`${scenario.description || 'No description'} • ${indexOverrideCount} index overrides, ${itemOverrideCount} item overrides • Created ${formatDistance(new Date(scenario.createdAt), new Date(), { addSuffix: true })}`}
+        sticky
+        primaryAction={
           <Button
-            color="ghost"
+            variant="success"
             size="md"
-            startIcon={<PencilIcon className="h-5 w-5" />}
-            onClick={handleEdit}
-          >
-            Edit
-          </Button>
-          <Button
-            color="info"
-            size="md"
-            startIcon={<ArrowsRightLeftIcon className="h-5 w-5" />}
-            onClick={handleCompare}
-          >
-            Compare
-          </Button>
-          <Button
-            color="success"
-            size="md"
-            startIcon={<BeakerIcon className="h-5 w-5" />}
+            leftIcon={<BeakerIcon className="h-5 w-5" />}
             onClick={handleRunCalculation}
           >
             Run Calculation
           </Button>
-          <Button
-            color="error"
-            size="md"
-            startIcon={<TrashIcon className="h-5 w-5" />}
-            onClick={handleDelete}
-          >
-            Delete
-          </Button>
-        </div>
-      </div>
+        }
+        secondaryActions={
+          <>
+            <Button
+              variant="ghost"
+              size="md"
+              leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+              onClick={() => router.push('/scenarios')}
+            >
+              Back to Scenarios
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              leftIcon={<PencilIcon className="h-5 w-5" />}
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              leftIcon={<ArrowsRightLeftIcon className="h-5 w-5" />}
+              onClick={handleCompare}
+            >
+              Compare
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              leftIcon={<TrashIcon className="h-5 w-5" />}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

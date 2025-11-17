@@ -2,11 +2,12 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { PencilIcon, ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/shared';
 import useItem from '@/hooks/useItem';
 import { formatDistance } from 'date-fns';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ItemDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -50,41 +51,41 @@ const ItemDetailPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/items')}
-        >
-          Back to Items
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{item.name}</h1>
-          <p className="text-gray-600 mt-1 font-mono text-sm">SKU: {item.sku}</p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title={item.name}
+        subtitle={`SKU: ${item.sku} • Created ${formatDistance(new Date(item.createdAt), new Date(), { addSuffix: true })}`}
+        sticky
+        primaryAction={
           <Button
-            color="primary"
+            variant="primary"
             size="md"
-            startIcon={<PencilIcon className="h-5 w-5" />}
+            leftIcon={<PencilIcon className="h-5 w-5" />}
             onClick={() => router.push(`/items/${id}/edit`)}
           >
             Edit
           </Button>
-          <Button
-            color="error"
-            size="md"
-            startIcon={<TrashIcon className="h-5 w-5" />}
-            onClick={handleDelete}
-          >
-            Delete
-          </Button>
-        </div>
-      </div>
+        }
+        secondaryActions={
+          <>
+            <Button
+              variant="ghost"
+              size="md"
+              leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+              onClick={() => router.push('/items')}
+            >
+              Back to Items
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              leftIcon={<TrashIcon className="h-5 w-5" />}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card bg-base-100 shadow-xl">

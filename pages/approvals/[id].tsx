@@ -5,13 +5,14 @@ import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
 import { useApprovalDetail } from '@/hooks/useApprovals';
 import { Loading } from '@/components/shared';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { formatDistance } from 'date-fns';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ApprovalDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -103,16 +104,24 @@ const ApprovalDetailPage: NextPageWithLayout = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return <span className="badge badge-success badge-lg gap-2"><CheckCircleIcon className="h-5 w-5" />Approved</span>;
-      case 'REJECTED':
-        return <span className="badge badge-error badge-lg gap-2"><XCircleIcon className="h-5 w-5" />Rejected</span>;
-      case 'PENDING':
-        return <span className="badge badge-warning badge-lg">Pending</span>;
-      default:
-        return <span className="badge badge-lg">{status}</span>;
-    }
+    const statusClasses = {
+      APPROVED: 'bg-success-light/20 text-success',
+      REJECTED: 'bg-error-light/20 text-error',
+      PENDING: 'bg-warning-light/20 text-warning',
+    };
+    const className = statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-700';
+    const icons = {
+      APPROVED: <CheckCircleIcon className="h-4 w-4" />,
+      REJECTED: <XCircleIcon className="h-4 w-4" />,
+    };
+    const icon = icons[status as keyof typeof icons];
+
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}>
+        {icon}
+        {status}
+      </span>
+    );
   };
 
   const getEntityTypeLabel = (entityType: string) => {
@@ -130,30 +139,52 @@ const ApprovalDetailPage: NextPageWithLayout = () => {
 
   const isPending = approval.status === 'PENDING';
 
+  const getPrimaryActions = () => {
+    if (!isPending) return null;
+
+    return (
+      <>
+        <Button
+          variant="success"
+          size="md"
+          leftIcon={<CheckCircleIcon className="h-5 w-5" />}
+          onClick={handleApprove}
+          disabled={isSubmitting}
+        >
+          Approve
+        </Button>
+        <Button
+          variant="danger"
+          size="md"
+          leftIcon={<XCircleIcon className="h-5 w-5" />}
+          onClick={handleReject}
+          disabled={isSubmitting}
+        >
+          Reject
+        </Button>
+      </>
+    );
+  };
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/approvals')}
-        >
-          Back to Approvals
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold">{getEntityTypeLabel(approval.entityType)}</h1>
-            <p className="text-gray-600 mt-1">
-              Created {formatDistance(new Date(approval.createdAt), new Date(), { addSuffix: true })}
-            </p>
-          </div>
-          {getStatusBadge(approval.status)}
-        </div>
-      </div>
+      <PageHeader
+        title={getEntityTypeLabel(approval.entityType)}
+        subtitle={`Entity ID: ${approval.entityId} • Created ${formatDistance(new Date(approval.createdAt), new Date(), { addSuffix: true })}`}
+        sticky
+        statusBadge={getStatusBadge(approval.status)}
+        primaryAction={getPrimaryActions()}
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+            onClick={() => router.push('/approvals')}
+          >
+            Back to Approvals
+          </Button>
+        }
+      />
 
       {/* Error Alert */}
       {error && (
@@ -212,7 +243,7 @@ const ApprovalDetailPage: NextPageWithLayout = () => {
       {isPending && (
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">Take Action</h2>
+            <h2 className="card-title">Add Comment</h2>
 
             <div className="form-control">
               <label className="label">
@@ -226,28 +257,9 @@ const ApprovalDetailPage: NextPageWithLayout = () => {
               />
             </div>
 
-            <div className="flex gap-3 mt-4">
-              <Button
-                color="success"
-                size="lg"
-                className="flex-1"
-                startIcon={<CheckCircleIcon className="h-5 w-5" />}
-                onClick={handleApprove}
-                loading={isSubmitting}
-              >
-                Approve
-              </Button>
-              <Button
-                color="error"
-                size="lg"
-                className="flex-1"
-                startIcon={<XCircleIcon className="h-5 w-5" />}
-                onClick={handleReject}
-                loading={isSubmitting}
-              >
-                Reject
-              </Button>
-            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Use the Approve or Reject buttons in the header to take action.
+            </p>
           </div>
         </div>
       )}

@@ -1,9 +1,10 @@
-import type { NextPageWithLayout } from '@/types';
+import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Loading } from '@/components/shared';
-import { Button, Tabs } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
+import { Tabs } from 'react-daisyui';
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -11,6 +12,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import usePAMDetail from '@/hooks/usePAMDetail';
+import PageHeader from '@/components/navigation/PageHeader';
 import FormulaPreviewBar from '@/components/pam/FormulaPreviewBar';
 import FormulaBuilder from '@/components/pam/FormulaBuilder';
 import HistoricalControlPanel from '@/components/pam/HistoricalControlPanel';
@@ -121,62 +123,42 @@ const PAMDetailPage: NextPageWithLayout = () => {
     }
   };
 
+  const statusBadge = (
+    <div className="dropdown dropdown-end">
+      <label tabIndex={0} className={`badge badge-lg cursor-pointer ${getStatusBadgeClass(pam.status)}`}>
+        {pam.status}
+      </label>
+      <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+        <li>
+          <a onClick={() => handleStatusChange('DRAFT')}>
+            <span className="badge badge-ghost badge-sm">DRAFT</span>
+            <span>Work in progress</span>
+          </a>
+        </li>
+        <li>
+          <a onClick={() => handleStatusChange('TEST')}>
+            <span className="badge badge-warning badge-sm">TEST</span>
+            <span>Ready for testing</span>
+          </a>
+        </li>
+        <li>
+          <a onClick={() => handleStatusChange('ACTIVE')}>
+            <span className="badge badge-success badge-sm">ACTIVE</span>
+            <span>Live in production</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-base-200">
       {/* Header and Navigation */}
       <div className="bg-base-100 shadow-sm">
         <div className="p-6 border-b border-base-300">
-          <div className="flex items-start justify-between mb-4">
-            <Button
-              size="sm"
-              color="ghost"
-              startIcon={<ArrowLeftIcon className="h-4 w-4" />}
-              onClick={() => router.push('/pams')}
-            >
-              Back to PAMs
-            </Button>
-
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                color="ghost"
-                startIcon={<QuestionMarkCircleIcon className="h-4 w-4" />}
-                onClick={() => {
-                  // Open help modal or documentation
-                  alert('Formula Builder Help: Learn how to build pricing formulas with nodes and connections.');
-                }}
-              >
-                Help
-              </Button>
-              <Button
-                size="sm"
-                color="ghost"
-                onClick={() => router.push(`/pams/${pamId}/edit`)}
-                startIcon={<PencilIcon className="h-4 w-4" />}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                color="primary"
-                loading={isSaving}
-                startIcon={<CheckIcon className="h-4 w-4" />}
-                onClick={async () => {
-                  setIsSaving(true);
-                  // Save any pending changes
-                  await new Promise((resolve) => setTimeout(resolve, 500));
-                  setIsSaving(false);
-                }}
-              >
-                Save Draft
-              </Button>
-            </div>
-          </div>
-
-          {/* Title and Status */}
-          <div className="flex items-center gap-3 mb-2">
-            {isEditingName ? (
-              <div className="flex items-center gap-2">
+          <PageHeader
+            title={
+              isEditingName ? (
                 <input
                   type="text"
                   className="input input-bordered input-lg font-bold"
@@ -189,49 +171,68 @@ const PAMDetailPage: NextPageWithLayout = () => {
                   }}
                   autoFocus
                 />
-              </div>
-            ) : (
-              <h1
-                className="text-3xl font-bold cursor-pointer hover:text-primary transition"
-                onClick={() => {
-                  setEditedName(pam.name);
-                  setIsEditingName(true);
+              ) : (
+                <span
+                  className="cursor-pointer hover:text-primary transition"
+                  onClick={() => {
+                    setEditedName(pam.name);
+                    setIsEditingName(true);
+                  }}
+                >
+                  {pam.name}
+                </span>
+              )
+            }
+            subtitle={pam.description}
+            statusBadge={statusBadge}
+            primaryAction={
+              <Button
+                variant="primary"
+                size="md"
+                leftIcon={<CheckIcon className="h-5 w-5" />}
+                onClick={async () => {
+                  setIsSaving(true);
+                  // Save any pending changes
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                  setIsSaving(false);
                 }}
+                disabled={isSaving}
               >
-                {pam.name}
-              </h1>
-            )}
-
-            <div className="dropdown dropdown-end">
-              <label tabIndex={0} className={`badge badge-lg cursor-pointer ${getStatusBadgeClass(pam.status)}`}>
-                {pam.status}
-              </label>
-              <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                <li>
-                  <a onClick={() => handleStatusChange('DRAFT')}>
-                    <span className="badge badge-ghost badge-sm">DRAFT</span>
-                    <span>Work in progress</span>
-                  </a>
-                </li>
-                <li>
-                  <a onClick={() => handleStatusChange('TEST')}>
-                    <span className="badge badge-warning badge-sm">TEST</span>
-                    <span>Ready for testing</span>
-                  </a>
-                </li>
-                <li>
-                  <a onClick={() => handleStatusChange('ACTIVE')}>
-                    <span className="badge badge-success badge-sm">ACTIVE</span>
-                    <span>Live in production</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {pam.description && (
-            <p className="text-gray-600">{pam.description}</p>
-          )}
+                Save Draft
+              </Button>
+            }
+            secondaryActions={
+              <>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  leftIcon={<ArrowLeftIcon className="h-5 w-5" />}
+                  onClick={() => router.push('/pams')}
+                >
+                  Back to PAMs
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  leftIcon={<QuestionMarkCircleIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    // Open help modal or documentation
+                    alert('Formula Builder Help: Learn how to build pricing formulas with nodes and connections.');
+                  }}
+                >
+                  Help
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  leftIcon={<PencilIcon className="h-5 w-5" />}
+                  onClick={() => router.push(`/pams/${pamId}/edit`)}
+                >
+                  Edit
+                </Button>
+              </>
+            }
+          />
 
           {/* Tabs */}
           <div className="mt-6">
