@@ -10,6 +10,7 @@ import { PlusIcon, ArrowPathIcon, BeakerIcon, ChartBarIcon } from '@heroicons/re
 import useScenarios from '@/hooks/useScenarios';
 import { Loading } from '@/components/shared';
 import ScenarioList from '@/components/scenarios/ScenarioList';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ScenariosPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -63,23 +64,11 @@ const ScenariosPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">What-If Scenarios</h1>
-          <p className="text-gray-600 mt-2">
-            Create and compare scenarios with price overrides and hedge positions
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            variant="ghost"
-            size="md"
-            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
-            onClick={handleRefresh}
-            isLoading={isRefreshing}
-          >
-            Refresh
-          </Button>
+      <PageHeader
+        title="What-If Scenarios"
+        subtitle="Create and compare scenarios with price overrides and hedge positions"
+        sticky
+        primaryAction={
           <Button
             variant="primary"
             size="md"
@@ -88,8 +77,19 @@ const ScenariosPage: NextPageWithLayout = () => {
           >
             New Scenario
           </Button>
-        </div>
-      </div>
+        }
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
+            onClick={handleRefresh}
+            loading={isRefreshing}
+          >
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

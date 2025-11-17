@@ -8,6 +8,7 @@ import ComparisonChart from '@/components/comparator/ComparisonChart';
 import AnalyticalBreakdownTable from '@/components/comparator/AnalyticalBreakdownTable';
 import useComparison from '@/hooks/useComparison';
 import usePAMs from '@/hooks/usePAMs';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ComparatorPage: NextPageWithLayout = () => {
   const { pams } = usePAMs();
@@ -57,12 +58,11 @@ const ComparatorPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Mechanism Sandbox & Comparator</h1>
-        <p className="text-gray-600 mt-1">
-          Compare two pricing mechanisms side-by-side to understand differences and divergence
-        </p>
-      </div>
+      <PageHeader
+        title="Mechanism Sandbox & Comparator"
+        subtitle="Compare two pricing mechanisms side-by-side to understand differences and divergence"
+        sticky
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Sidebar: Mechanism Selector */}

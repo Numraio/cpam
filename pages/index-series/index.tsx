@@ -3,11 +3,14 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { PlusIcon, MagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import useIndexSeries from '@/hooks/useIndexSeries';
 import { Loading } from '@/components/shared';
 import IndexSeriesTable from '@/components/index-series/IndexSeriesTable';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const IndexSeriesPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -21,9 +24,11 @@ const IndexSeriesPage: NextPageWithLayout = () => {
   if (isError) {
     return (
       <div className="p-6">
-        <div className="alert alert-error">
-          <span>Failed to load index series. Please try again.</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-error">
+          <CardBody>
+            <p className="text-error font-medium">Failed to load index series. Please try again.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -31,9 +36,11 @@ const IndexSeriesPage: NextPageWithLayout = () => {
   if (!teamSlug) {
     return (
       <div className="p-6">
-        <div className="alert alert-warning">
-          <span>No team found. Please create or join a team first.</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-warning">
+          <CardBody>
+            <p className="text-warning font-medium">No team found. Please create or join a team first.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -50,58 +57,57 @@ const IndexSeriesPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Index Series</h1>
-          <p className="text-gray-600 mt-1">
-            Manage market price data sources and time series
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title="Index Series"
+        subtitle="Manage market price data sources and time series"
+        sticky
+        primaryAction={
           <Button
-            color="primary"
+            variant="primary"
             size="md"
-            startIcon={<PlusIcon className="h-5 w-5" />}
+            leftIcon={<PlusIcon className="h-5 w-5" />}
             onClick={() => router.push('/index-series/new')}
           >
             Add Index Series
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="mb-4">
-        <input
+      <div className="mb-6">
+        <Input
           type="text"
           placeholder="Search by series code, name, provider, or type..."
-          className="input input-bordered w-full max-w-md"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          rightIcon={<MagnifyingGlassIcon className="h-5 w-5" />}
+          className="max-w-md"
         />
       </div>
 
       {filteredSeries && filteredSeries.length > 0 ? (
         <IndexSeriesTable series={filteredSeries} teamSlug={teamSlug} onDelete={mutate} />
       ) : (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body items-center text-center">
-            <h2 className="card-title">No index series found</h2>
-            <p className="text-gray-600">
+        <Card variant="elevated" className="border-t-4 border-t-primary">
+          <CardBody className="flex flex-col items-center text-center py-12">
+            <ChartBarIcon className="h-16 w-16 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No index series found</h2>
+            <p className="text-gray-600 mb-6 max-w-md">
               {searchQuery
-                ? 'No index series match your search criteria.'
-                : 'Get started by adding your first index series.'}
+                ? 'No index series match your search criteria. Try adjusting your filters.'
+                : 'Get started by adding your first index series to track market data.'}
             </p>
             {!searchQuery && (
               <Button
-                color="primary"
+                variant="primary"
                 size="md"
-                className="mt-4"
+                leftIcon={<PlusIcon className="h-5 w-5" />}
                 onClick={() => router.push('/index-series/new')}
               >
                 Add Your First Index Series
               </Button>
             )}
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       )}
     </div>
   );

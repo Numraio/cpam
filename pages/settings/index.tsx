@@ -11,6 +11,7 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const SettingsPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -76,12 +77,11 @@ const SettingsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">
-          Configure system settings and integrations
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        subtitle="Configure system settings and integrations"
+        sticky
+      />
 
       {/* Settings Sections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

@@ -8,6 +8,7 @@ import ApprovalQueue from '@/components/approvals/ApprovalQueue';
 import { Button } from '@/components/ui/Button';
 import { KPICard } from '@/components/ui/KPICard';
 import { ArrowPathIcon, ClockIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import PageHeader from '@/components/navigation/PageHeader';
 
 const ApprovalsPage: NextPageWithLayout = () => {
   const [statusFilter, setStatusFilter] = useState('PENDING');
@@ -26,23 +27,22 @@ const ApprovalsPage: NextPageWithLayout = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Approvals</h1>
-          <p className="text-gray-600 mt-2">
-            Review and approve or reject changes
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          size="md"
-          leftIcon={<ArrowPathIcon className="h-5 w-5" />}
-          onClick={handleRefresh}
-          isLoading={isRefreshing}
-        >
-          Refresh
-        </Button>
-      </div>
+      <PageHeader
+        title="Approvals"
+        subtitle="Review and approve or reject changes"
+        sticky
+        secondaryActions={
+          <Button
+            variant="ghost"
+            size="md"
+            leftIcon={<ArrowPathIcon className="h-5 w-5" />}
+            onClick={handleRefresh}
+            loading={isRefreshing}
+          >
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
