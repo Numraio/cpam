@@ -40,6 +40,7 @@ import {
   CalculatorIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import { LineChart, BarChart, AreaChart, PieChart } from '@/components/ui/charts';
 
 /**
  * Design System Showcase
@@ -283,31 +284,83 @@ const DesignSystemPage: NextPageWithLayout = () => {
 
         {/* KPI Cards */}
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">KPI Cards</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">KPI Cards - Modern Design</h3>
+          <p className="text-sm text-gray-600 mb-4">Enhanced with sparklines, better typography, and hover states (Stripe/Figma-inspired)</p>
+
+          {/* With Sparklines */}
+          <h4 className="text-sm font-semibold text-gray-600 mb-3">With Sparklines & Variants</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <KPICard
+              title="Total Revenue"
+              value="$1,234,567"
+              change={12.3}
+              changeLabel="vs last month"
+              trend="up"
+              icon={<ChartBarIcon className="h-5 w-5" />}
+              variant="primary"
+              sparkline={[400, 420, 380, 450, 470, 490, 520, 540, 580, 600, 620, 650]}
+            />
+            <KPICard
+              title="Active Users"
+              value="42,891"
+              change={5.2}
+              changeLabel="vs last week"
+              trend="up"
+              icon={<UserGroupIcon className="h-5 w-5" />}
+              variant="success"
+              sparkline={[320, 330, 310, 340, 360, 380, 400, 420, 450, 470, 490, 510]}
+            />
+            <KPICard
+              title="Calculations"
+              value="8,291"
+              change={-2.1}
+              changeLabel="vs last month"
+              trend="down"
+              icon={<CalculatorIcon className="h-5 w-5" />}
+              variant="warning"
+              sparkline={[500, 490, 480, 470, 460, 450, 440, 430, 420, 410, 400, 390]}
+            />
+            <KPICard
+              title="Error Rate"
+              value="0.23%"
+              change={0}
+              changeLabel="stable"
+              trend="neutral"
+              icon={<CubeIcon className="h-5 w-5" />}
+              variant="error"
+              sparkline={[50, 51, 50, 49, 50, 51, 50, 50, 49, 50, 51, 50]}
+            />
+          </div>
+
+          {/* Without Sparklines */}
+          <h4 className="text-sm font-semibold text-gray-600 mb-3">Standard KPI Cards</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              label="Total Items"
+              title="Total Items"
               value="1,234"
-              change={{ value: '+12.3%', trend: 'up' }}
-              icon={<CubeIcon className="h-12 w-12" />}
+              subtitle="Formula graphs"
+              icon={<CubeIcon className="h-5 w-5" />}
             />
             <KPICard
-              label="Active PAMs"
+              title="Active PAMs"
               value="42"
-              change={{ value: '+5.2%', trend: 'up' }}
-              icon={<CalculatorIcon className="h-12 w-12" />}
+              change={5.2}
+              trend="up"
+              icon={<CalculatorIcon className="h-5 w-5" />}
+              variant="primary"
             />
             <KPICard
-              label="Calculations"
-              value="8,291"
-              change={{ value: '-2.1%', trend: 'down' }}
-              icon={<ChartBarIcon className="h-12 w-12" />}
-            />
-            <KPICard
-              label="Team Members"
+              title="Pending Approvals"
               value="15"
-              change={{ value: '0%', trend: 'neutral' }}
-              icon={<UserGroupIcon className="h-12 w-12" />}
+              subtitle="Awaiting review"
+              icon={<ChartBarIcon className="h-5 w-5" />}
+              variant="warning"
+            />
+            <KPICard
+              title="Team Members"
+              value="8"
+              changeLabel="2 pending invites"
+              icon={<UserGroupIcon className="h-5 w-5" />}
             />
           </div>
         </div>
@@ -610,6 +663,317 @@ const DesignSystemPage: NextPageWithLayout = () => {
               variant="secondary"
             />
           </Tooltip>
+        </div>
+      </section>
+
+      {/* Charts Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Charts & Data Visualization</h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Modern chart components with enhanced tooltips, gradients, and interactions inspired by Stripe, Figma, and Google Analytics.
+          Features cleaner grids, better spacing, smooth animations, and refined color palettes.
+        </p>
+
+        <div className="space-y-8">
+          {/* Line Chart */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Line Chart</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Clean lines, no dots by default, enhanced hover states, custom tooltips with color indicators
+            </p>
+            <Card variant="elevated">
+              <CardBody>
+                <LineChart
+                  data={[
+                    { month: 'Jan', revenue: 4000, costs: 2400 },
+                    { month: 'Feb', revenue: 3000, costs: 1398 },
+                    { month: 'Mar', revenue: 2000, costs: 9800 },
+                    { month: 'Apr', revenue: 2780, costs: 3908 },
+                    { month: 'May', revenue: 1890, costs: 4800 },
+                    { month: 'Jun', revenue: 2390, costs: 3800 },
+                  ]}
+                  lines={[
+                    { dataKey: 'revenue', name: 'Revenue' },
+                    { dataKey: 'costs', name: 'Costs', color: 'hsl(var(--warning))' },
+                  ]}
+                  xAxisKey="month"
+                  height={300}
+                />
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Bar Chart */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Bar Chart</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Rounded corners, better spacing, optimized bar widths, subtle hover cursor
+            </p>
+            <Card variant="elevated">
+              <CardBody>
+                <BarChart
+                  data={[
+                    { category: 'Product A', sales: 4000, profit: 2400 },
+                    { category: 'Product B', sales: 3000, profit: 1398 },
+                    { category: 'Product C', sales: 2000, profit: 9800 },
+                    { category: 'Product D', sales: 2780, profit: 3908 },
+                    { category: 'Product E', sales: 1890, profit: 4800 },
+                  ]}
+                  bars={[
+                    { dataKey: 'sales', name: 'Sales' },
+                    { dataKey: 'profit', name: 'Profit', color: 'hsl(var(--success))' },
+                  ]}
+                  xAxisKey="category"
+                  height={300}
+                />
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Area Chart */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Area Chart</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              <strong>Stripe-style gradients:</strong> Smooth linear gradients from 30% opacity to 5%, creating elegant fills
+            </p>
+            <Card variant="elevated">
+              <CardBody>
+                <AreaChart
+                  data={[
+                    { date: '2024-01', desktop: 186, mobile: 80 },
+                    { date: '2024-02', desktop: 305, mobile: 200 },
+                    { date: '2024-03', desktop: 237, mobile: 120 },
+                    { date: '2024-04', desktop: 73, mobile: 190 },
+                    { date: '2024-05', desktop: 209, mobile: 130 },
+                    { date: '2024-06', desktop: 214, mobile: 140 },
+                  ]}
+                  areas={[
+                    { dataKey: 'desktop', name: 'Desktop' },
+                    { dataKey: 'mobile', name: 'Mobile', color: 'hsl(var(--success))' },
+                  ]}
+                  xAxisKey="date"
+                  height={300}
+                  stacked
+                />
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Pie Chart */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Pie Chart</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Enhanced tooltips with percentage calculations, white stroke borders, hover opacity effects (Figma-inspired)
+            </p>
+            <Card variant="elevated">
+              <CardBody>
+                <PieChart
+                  data={[
+                    { name: 'Chrome', value: 400 },
+                    { name: 'Safari', value: 300 },
+                    { name: 'Firefox', value: 200 },
+                    { name: 'Edge', value: 100 },
+                  ]}
+                  dataKey="value"
+                  nameKey="name"
+                  height={350}
+                />
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Donut Chart */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Donut Chart</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Modern donut chart with increased padding angle for better visual separation
+            </p>
+            <Card variant="elevated">
+              <CardBody>
+                <PieChart
+                  data={[
+                    { name: 'Q1', value: 2400 },
+                    { name: 'Q2', value: 4567 },
+                    { name: 'Q3', value: 1398 },
+                    { name: 'Q4', value: 9800 },
+                  ]}
+                  dataKey="value"
+                  nameKey="name"
+                  height={350}
+                  innerRadius={60}
+                />
+              </CardBody>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Animations Section */}
+      <section>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Animations & Micro-interactions</h2>
+
+        <div className="space-y-8">
+          {/* Fade Animations */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Fade Animations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card variant="elevated" className="animate-fade-in">
+                <CardBody>
+                  <p className="text-gray-700 font-medium">Fade In</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Smooth fade-in effect using <code className="text-xs bg-gray-100 px-1 rounded">animate-fade-in</code>
+                  </p>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          {/* Slide Animations */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Slide Animations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card variant="elevated" className="animate-slide-in-from-top">
+                <CardBody>
+                  <p className="text-gray-700 font-medium text-sm">Slide from Top</p>
+                  <p className="text-xs text-gray-500 mt-1">animate-slide-in-from-top</p>
+                </CardBody>
+              </Card>
+              <Card variant="elevated" className="animate-slide-in-from-bottom">
+                <CardBody>
+                  <p className="text-gray-700 font-medium text-sm">Slide from Bottom</p>
+                  <p className="text-xs text-gray-500 mt-1">animate-slide-in-from-bottom</p>
+                </CardBody>
+              </Card>
+              <Card variant="elevated" className="animate-slide-in-from-left">
+                <CardBody>
+                  <p className="text-gray-700 font-medium text-sm">Slide from Left</p>
+                  <p className="text-xs text-gray-500 mt-1">animate-slide-in-from-left</p>
+                </CardBody>
+              </Card>
+              <Card variant="elevated" className="animate-slide-in-from-right">
+                <CardBody>
+                  <p className="text-gray-700 font-medium text-sm">Slide from Right</p>
+                  <p className="text-xs text-gray-500 mt-1">animate-slide-in-from-right</p>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          {/* Scale Animations */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Scale & Bounce Animations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card variant="elevated" className="animate-scale-in">
+                <CardBody>
+                  <p className="text-gray-700 font-medium">Scale In</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Scales from 95% to 100% with <code className="text-xs bg-gray-100 px-1 rounded">animate-scale-in</code>
+                  </p>
+                </CardBody>
+              </Card>
+              <Card variant="elevated" className="animate-bounce-in">
+                <CardBody>
+                  <p className="text-gray-700 font-medium">Bounce In</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Playful bounce effect with <code className="text-xs bg-gray-100 px-1 rounded">animate-bounce-in</code>
+                  </p>
+                </CardBody>
+              </Card>
+              <Card variant="elevated">
+                <CardBody>
+                  <p className="text-gray-700 font-medium">Hover Scale</p>
+                  <div className="mt-2 p-4 bg-primary-100 rounded hover:scale-105 transition-transform duration-200 cursor-pointer">
+                    <p className="text-sm text-primary-700">Hover me!</p>
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          {/* Loading States */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Loading & Continuous Animations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card variant="elevated">
+                <CardBody>
+                  <p className="text-gray-700 font-medium mb-3">Pulse Soft</p>
+                  <div className="h-4 w-full bg-primary-200 rounded animate-pulse-soft" />
+                </CardBody>
+              </Card>
+              <Card variant="elevated">
+                <CardBody>
+                  <p className="text-gray-700 font-medium mb-3">Shimmer</p>
+                  <div
+                    className="h-4 w-full rounded animate-shimmer"
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%)',
+                      backgroundSize: '1000px 100%',
+                    }}
+                  />
+                </CardBody>
+              </Card>
+              <Card variant="elevated">
+                <CardBody>
+                  <p className="text-gray-700 font-medium mb-3">Spin Slow</p>
+                  <div className="flex justify-center">
+                    <div className="h-8 w-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin-slow" />
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          {/* Hover Effects */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Hover & Interactive Effects</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card variant="outlined" className="hover:shadow-lg transition-shadow duration-normal cursor-pointer">
+                <CardBody>
+                  <p className="text-sm font-medium text-gray-700">Shadow on Hover</p>
+                  <p className="text-xs text-gray-500 mt-1">hover:shadow-lg</p>
+                </CardBody>
+              </Card>
+              <Card variant="outlined" className="hover:bg-gray-50 transition-colors duration-normal cursor-pointer">
+                <CardBody>
+                  <p className="text-sm font-medium text-gray-700">Background Change</p>
+                  <p className="text-xs text-gray-500 mt-1">hover:bg-gray-50</p>
+                </CardBody>
+              </Card>
+              <Card variant="outlined" className="hover:border-primary-500 transition-colors duration-normal cursor-pointer">
+                <CardBody>
+                  <p className="text-sm font-medium text-gray-700">Border Color</p>
+                  <p className="text-xs text-gray-500 mt-1">hover:border-primary</p>
+                </CardBody>
+              </Card>
+              <Card variant="outlined" className="hover:-translate-y-1 transition-transform duration-normal cursor-pointer">
+                <CardBody>
+                  <p className="text-sm font-medium text-gray-700">Lift Up</p>
+                  <p className="text-xs text-gray-500 mt-1">hover:-translate-y-1</p>
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          {/* Staggered Animations Example */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Staggered List Animations</h3>
+            <Card variant="elevated">
+              <CardBody>
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((item, index) => (
+                    <div
+                      key={item}
+                      className="p-3 bg-gray-50 rounded-md animate-slide-in-from-left"
+                      style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'both' }}
+                    >
+                      <p className="text-sm font-medium text-gray-700">List Item {item}</p>
+                      <p className="text-xs text-gray-500">Staggered by {index * 100}ms</p>
+                    </div>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </section>
 
