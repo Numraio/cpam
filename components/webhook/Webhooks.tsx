@@ -4,7 +4,7 @@ import { Team } from '@prisma/client';
 import useWebhooks from 'hooks/useWebhooks';
 import { useTranslation } from 'next-i18next';
 import React, { useState } from 'react';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import type { EndpointOut } from 'svix';
 
@@ -13,6 +13,8 @@ import { defaultHeaders } from '@/lib/common';
 import type { ApiResponse } from 'types';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import { Table } from '@/components/shared/table/Table';
+import PageHeader from '@/components/navigation/PageHeader';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 const Webhooks = ({ team }: { team: Team }) => {
   const { t } = useTranslation('common');
@@ -60,23 +62,21 @@ const Webhooks = ({ team }: { team: Team }) => {
   return (
     <WithLoadingAndError isLoading={isLoading} error={isError}>
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <div className="space-y-3">
-            <h2 className="text-xl font-medium leading-none tracking-tight">
-              {t('webhooks')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('webhooks-description')}
-            </p>
-          </div>
-          <Button
-            color="primary"
-            size="md"
-            onClick={() => setCreateWebhookVisible(!createWebhookVisible)}
-          >
-            {t('add-webhook')}
-          </Button>
-        </div>
+        <PageHeader
+          title={t('webhooks')}
+          subtitle={t('webhooks-description')}
+          sticky
+          primaryAction={
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<PlusIcon className="h-5 w-5" />}
+              onClick={() => setCreateWebhookVisible(!createWebhookVisible)}
+            >
+              {t('add-webhook')}
+            </Button>
+          }
+        />
         {webhooks?.length === 0 ? (
           <EmptyState title={t('no-webhook-title')} />
         ) : (

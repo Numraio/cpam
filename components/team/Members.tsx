@@ -4,7 +4,7 @@ import useCanAccess from 'hooks/useCanAccess';
 import useTeamMembers, { TeamMemberWithUser } from 'hooks/useTeamMembers';
 import { useSession } from 'next-auth/react';
 import { useTranslation } from 'next-i18next';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 
 import { InviteMember } from '@/components/invitation';
@@ -14,6 +14,8 @@ import type { ApiResponse } from 'types';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import { useState } from 'react';
 import { Table } from '@/components/shared/table/Table';
+import PageHeader from '@/components/navigation/PageHeader';
+import { UserPlusIcon } from '@heroicons/react/24/outline';
 
 const Members = ({ team }: { team: Team }) => {
   const { data: session } = useSession();
@@ -86,19 +88,21 @@ const Members = ({ team }: { team: Team }) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-center">
-        <div className="space-y-3">
-          <h2 className="text-xl font-medium leading-none tracking-tight">
-            {t('members')}
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('members-description')}
-          </p>
-        </div>
-        <Button color="primary" size="md" onClick={() => setVisible(!visible)}>
-          {t('add-member')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('members')}
+        subtitle={t('members-description')}
+        sticky
+        primaryAction={
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<UserPlusIcon className="h-5 w-5" />}
+            onClick={() => setVisible(!visible)}
+          >
+            {t('add-member')}
+          </Button>
+        }
+      />
 
       <Table
         cols={cols}

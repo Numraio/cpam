@@ -3,12 +3,14 @@ import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
 import type { ApiKey, Team } from '@prisma/client';
 import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import { toast } from 'react-hot-toast';
 import type { ApiResponse } from 'types';
 import NewAPIKey from './NewAPIKey';
 import useAPIKeys from 'hooks/useAPIKeys';
 import { Table } from '@/components/shared/table/Table';
+import PageHeader from '@/components/navigation/PageHeader';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 interface APIKeysProps {
   team: Team;
@@ -53,23 +55,21 @@ const APIKeys = ({ team }: APIKeysProps) => {
   return (
     <WithLoadingAndError isLoading={isLoading} error={error}>
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <div className="space-y-3">
-            <h2 className="text-xl font-medium leading-none tracking-tight">
-              {t('api-keys')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('api-keys-description')}
-            </p>
-          </div>
-          <Button
-            color="primary"
-            size="md"
-            onClick={() => setCreateModalVisible(true)}
-          >
-            {t('create-api-key')}
-          </Button>
-        </div>
+        <PageHeader
+          title={t('api-keys')}
+          subtitle={t('api-keys-description')}
+          sticky
+          primaryAction={
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<PlusIcon className="h-5 w-5" />}
+              onClick={() => setCreateModalVisible(true)}
+            >
+              {t('create-api-key')}
+            </Button>
+          }
+        />
         {apiKeys.length === 0 ? (
           <EmptyState
             title={t('no-api-key-title')}

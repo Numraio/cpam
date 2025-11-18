@@ -5,7 +5,7 @@ import useTeams from 'hooks/useTeams';
 import { useTranslation } from 'next-i18next';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import type { ApiResponse } from 'types';
 import { useRouter } from 'next/router';
@@ -13,6 +13,8 @@ import ConfirmationDialog from '../shared/ConfirmationDialog';
 import { WithLoadingAndError } from '@/components/shared';
 import { CreateTeam } from '@/components/team';
 import { Table } from '@/components/shared/table/Table';
+import PageHeader from '@/components/navigation/PageHeader';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 const Teams = () => {
   const router = useRouter();
@@ -50,23 +52,21 @@ const Teams = () => {
   return (
     <WithLoadingAndError isLoading={isLoading} error={isError}>
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <div className="space-y-3">
-            <h2 className="text-xl font-medium leading-none tracking-tight">
-              {t('all-teams')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('team-listed')}
-            </p>
-          </div>
-          <Button
-            color="primary"
-            size="md"
-            onClick={() => setCreateTeamVisible(!createTeamVisible)}
-          >
-            {t('create-team')}
-          </Button>
-        </div>
+        <PageHeader
+          title={t('all-teams')}
+          subtitle={t('team-listed')}
+          sticky
+          primaryAction={
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<PlusIcon className="h-5 w-5" />}
+              onClick={() => setCreateTeamVisible(!createTeamVisible)}
+            >
+              {t('create-team')}
+            </Button>
+          }
+        />
 
         <Table
           cols={[t('name'), t('members'), t('created-at'), t('actions')]}
