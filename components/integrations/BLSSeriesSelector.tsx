@@ -137,9 +137,9 @@ export default function BLSSeriesSelector({
         <Input
           label="Search BLS Series"
           type="text"
-          placeholder="Search by name, description, or series ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          helperText="Search by name, description, or series ID"
           autoComplete="off"
         />
 

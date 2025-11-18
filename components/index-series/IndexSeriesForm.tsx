@@ -163,7 +163,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               value={formData.seriesCode}
               onChange={handleChange}
               error={errors.seriesCode}
-              placeholder="e.g., PLATTS_BRENT, USD_EUR"
+              helperText="e.g., PLATTS_BRENT, USD_EUR"
               disabled={!!initialData}
               required
               autoComplete="off"
@@ -175,7 +175,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               value={formData.name}
               onChange={handleChange}
               error={errors.name}
-              placeholder="Descriptive name"
+              helperText="Descriptive name for this series"
               required
               autoComplete="off"
             />
@@ -188,7 +188,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               rows={3}
               value={formData.description}
               onChange={handleChange}
-              placeholder="Optional description"
+              helperText="Optional description of this index series"
             />
           </div>
         </CardBody>
@@ -224,8 +224,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               type="text"
               value={formData.unit}
               onChange={handleChange}
-              placeholder="e.g., USD/bbl, EUR/USD"
-              helperText="Optional"
+              helperText="e.g., USD/bbl, EUR/USD (Optional)"
               autoComplete="off"
             />
 
