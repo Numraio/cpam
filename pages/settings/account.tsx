@@ -9,6 +9,7 @@ import { getSession } from '@/lib/session';
 import { getUserBySession } from 'models/user';
 import { UpdateAccount } from '@/components/account';
 import env from '@/lib/env';
+import PageHeader from '@/components/navigation/PageHeader';
 
 type AccountProps = InferGetServerSidePropsType<typeof getServerSideProps>;
 
@@ -16,7 +17,16 @@ const Account: NextPageWithLayout<AccountProps> = ({
   user,
   allowEmailChange,
 }) => {
-  return <UpdateAccount user={user} allowEmailChange={allowEmailChange} />;
+  return (
+    <div className="p-6">
+      <PageHeader
+        title="Account Settings"
+        subtitle="Manage your personal information and preferences"
+        sticky
+      />
+      <UpdateAccount user={user} allowEmailChange={allowEmailChange} />
+    </div>
+  );
 };
 
 export const getServerSideProps = async (
