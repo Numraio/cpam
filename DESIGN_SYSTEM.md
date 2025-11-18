@@ -612,6 +612,116 @@ interface NoAccessProps {
 
 ---
 
+### Command Palette (⌘K)
+
+**Location:** `components/navigation/CommandPalette.tsx`
+
+**Features:**
+- Global keyboard shortcut (⌘K / Ctrl+K)
+- Fuzzy search across pages and actions
+- Recent pages tracking (localStorage)
+- Categorized results (Pages, Actions, Recent)
+- Keyboard navigation (↑↓ arrows, Enter, Escape)
+- Go-to shortcuts (G + letter: G D for Dashboard, G P for PAMs, etc.)
+- Dark mode support
+
+**Integration:**
+Already integrated in `pages/_app.tsx` via `useCommandPalette` hook
+
+**Usage:**
+```tsx
+import CommandPalette from '@/components/navigation/CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
+
+function App() {
+  const { open, setOpen } = useCommandPalette();
+
+  return (
+    <>
+      <CommandPalette open={open} onOpenChange={setOpen} />
+      {/* App content */}
+    </>
+  );
+}
+```
+
+**Keyboard Shortcuts:**
+```
+⌘K / Ctrl+K  - Open command palette
+ESC           - Close command palette
+↑↓            - Navigate results
+↵ (Enter)     - Select result
+
+Go-to shortcuts (press G then letter):
+G D  - Dashboard
+G I  - Items
+G S  - Index Series
+G P  - PAMs
+G E  - Scenarios
+G C  - Comparator
+G A  - Calculations
+G V  - Approvals
+G R  - Reports
+```
+
+**Customization:**
+Pages and actions are defined in the CommandPalette component. Add new commands by extending the `pageCommands` or `actionCommands` arrays.
+
+---
+
+### Breadcrumb Navigation
+
+**Location:** `components/navigation/Breadcrumb.tsx`
+
+**Features:**
+- Auto-generated breadcrumb trail
+- Home icon for dashboard link
+- Clickable segments for navigation
+- Current page highlighted
+- Icon support for each item
+- Responsive with text truncation
+- ARIA labels for accessibility
+
+**Usage:**
+```tsx
+import Breadcrumb from '@/components/navigation/Breadcrumb';
+import { CubeIcon } from '@heroicons/react/24/outline';
+
+<Breadcrumb
+  items={[
+    { label: 'Items', href: '/items', icon: CubeIcon },
+    { label: 'SKU-123' }, // Current page (no href)
+  ]}
+/>
+```
+
+**Integration with PageHeader:**
+```tsx
+<PageHeader
+  title="Item Details"
+  breadcrumb={
+    <Breadcrumb
+      items={[
+        { label: 'Items', href: '/items' },
+        { label: item.name },
+      ]}
+    />
+  }
+  primaryAction={<Button>Edit</Button>}
+/>
+```
+
+**BreadcrumbItem Interface:**
+```tsx
+interface BreadcrumbItem {
+  label: string;        // Display text
+  href?: string;        // Navigation link (omit for current page)
+  icon?: any;          // Optional Heroicon component
+}
+```
+
+---
+
 ### Page Header
 
 **Location:** `components/navigation/PageHeader.tsx`
@@ -621,6 +731,7 @@ interface NoAccessProps {
 - Scroll-aware shadow
 - Primary and secondary actions
 - Status badges
+- Breadcrumb slot
 - Responsive layout
 
 **Usage:**

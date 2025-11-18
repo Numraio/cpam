@@ -15,9 +15,12 @@ import { Theme, applyTheme } from '@/lib/theme';
 import { Themer } from '@boxyhq/react-ui/shared';
 import { AccountLayout } from '@/components/layouts';
 import { PageTransition } from '@/components/motion';
+import CommandPalette from '@/components/navigation/CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const { session, ...props } = pageProps;
+  const { open, setOpen } = useCommandPalette();
 
   // Add mixpanel
   useEffect(() => {
@@ -45,6 +48,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
       <SessionProvider session={session}>
         <Toaster toastOptions={{ duration: 4000 }} />
+        <CommandPalette open={open} onOpenChange={setOpen} />
         <Themer
           overrideTheme={{
             '--primary-color': colors.blue['500'],
