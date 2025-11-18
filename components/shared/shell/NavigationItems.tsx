@@ -108,19 +108,20 @@ const CollapsibleNavItem = ({ menu, isExpanded, onToggle, className = '' }: Coll
         <Link
           href={menu.href}
           className={classNames(
-            'group flex items-center gap-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-normal',
+            'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200 border-l-4',
             {
-              'bg-primary text-white shadow-sm': menu.active,
-              'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100':
+              'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 border-primary-600': menu.active,
+              'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100 border-transparent hover:border-gray-300 dark:hover:border-gray-700':
                 !menu.active,
             },
             className
           )}
+          aria-current={menu.active ? 'page' : undefined}
         >
           {menu.icon && (
             <menu.icon
-              className={classNames('h-5 w-5 shrink-0 transition-colors duration-normal', {
-                'text-white': menu.active,
+              className={classNames('h-5 w-5 shrink-0 transition-colors duration-200', {
+                'text-primary-600 dark:text-primary-400': menu.active,
                 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300':
                   !menu.active,
               })}
@@ -139,9 +140,9 @@ const CollapsibleNavItem = ({ menu, isExpanded, onToggle, className = '' }: Coll
             onToggle();
           }}
           className={classNames(
-            'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md transition-colors duration-normal',
+            'absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200 hover:scale-110',
             {
-              'text-white hover:bg-primary-600': menu.active,
+              'text-primary-600 hover:bg-primary-100 dark:text-primary-400 dark:hover:bg-primary-900/30': menu.active,
               'text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300':
                 !menu.active,
             }
@@ -150,9 +151,9 @@ const CollapsibleNavItem = ({ menu, isExpanded, onToggle, className = '' }: Coll
           aria-expanded={isExpanded}
         >
           {isExpanded ? (
-            <ChevronDownIcon className="h-4 w-4 transition-transform duration-normal" />
+            <ChevronDownIcon className="h-4 w-4 transition-transform duration-200" />
           ) : (
-            <ChevronRightIcon className="h-4 w-4 transition-transform duration-normal" />
+            <ChevronRightIcon className="h-4 w-4 transition-transform duration-200" />
           )}
         </button>
       </div>
@@ -163,18 +164,18 @@ const CollapsibleNavItem = ({ menu, isExpanded, onToggle, className = '' }: Coll
           'overflow-hidden transition-all duration-300 ease-in-out',
           {
             'max-h-0 opacity-0': !isExpanded,
-            'max-h-screen opacity-100': isExpanded,
+            'max-h-96 opacity-100 mt-1': isExpanded,
           }
         )}
       >
         <ul
           role="group"
           aria-label={`${menu.name} submenu`}
-          className="flex flex-col gap-y-1 mt-1 ml-1"
+          className="flex flex-col gap-y-1 ml-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700"
         >
           {menu.items.map((subitem) => (
             <li key={subitem.name}>
-              <NavigationItem menu={subitem} className="pl-9" />
+              <NavigationItem menu={subitem} className="pl-8" />
             </li>
           ))}
         </ul>
@@ -188,19 +189,20 @@ const NavigationItem = ({ menu, className = '' }: NavigationItemProps) => {
     <Link
       href={menu.href}
       className={classNames(
-        'group flex items-center gap-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-normal',
+        'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200 relative',
         {
-          'bg-primary text-white shadow-sm': menu.active,
-          'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100':
+          'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 border-l-4 border-primary-600': menu.active,
+          'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100 border-l-4 border-transparent hover:border-gray-300 dark:hover:border-gray-700':
             !menu.active,
         },
         className
       )}
+      aria-current={menu.active ? 'page' : undefined}
     >
       {menu.icon && (
         <menu.icon
-          className={classNames('h-5 w-5 shrink-0 transition-colors duration-normal', {
-            'text-white': menu.active,
+          className={classNames('h-5 w-5 shrink-0 transition-colors duration-200', {
+            'text-primary-600 dark:text-primary-400': menu.active,
             'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300':
               !menu.active,
           })}
