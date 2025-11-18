@@ -299,7 +299,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
           onConfirm={handleBLSPreviewConfirm}
           seriesId={selectedBLSSeries.value}
           seriesName={selectedBLSSeries.label}
-          yearsBack={2}
+          yearsBack={20}
         />
       )}
     </form>
