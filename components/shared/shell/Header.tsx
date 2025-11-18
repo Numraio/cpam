@@ -12,6 +12,7 @@ import useTheme from 'hooks/useTheme';
 import env from '@/lib/env';
 import { useTranslation } from 'next-i18next';
 import { useCustomSignOut } from 'hooks/useCustomSignout';
+import { DropdownMenu } from '@/components/ui/DropdownMenu';
 
 interface HeaderProps {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -29,83 +30,69 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
 
   const { user } = data;
 
+  const dropdownItems = [
+    {
+      label: (
+        <div className="flex items-center gap-2">
+          <UserCircleIcon className="h-4 w-4" />
+          <span>{t('account')}</span>
+        </div>
+      ),
+      onSelect: () => {
+        window.location.href = '/settings/account';
+      },
+    },
+    ...(env.darkModeEnabled
+      ? [
+          {
+            label: (
+              <div className="flex items-center gap-2">
+                <SunIcon className="h-4 w-4" />
+                <span>{t('switch-theme')}</span>
+              </div>
+            ),
+            onSelect: toggleTheme,
+          },
+        ]
+      : []),
+    { type: 'separator' as const },
+    {
+      label: (
+        <div className="flex items-center gap-2">
+          <ArrowRightOnRectangleIcon className="h-4 w-4" />
+          <span>{t('logout')}</span>
+        </div>
+      ),
+      onSelect: signOut,
+    },
+  ];
+
   return (
-    <div className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b px-4 sm:gap-x-6 sm:px-6 lg:px-8 bg-white dark:bg-black dark:text-white">
+    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm backdrop-blur-sm bg-white/95 sm:gap-x-6 sm:px-6 lg:px-8 dark:border-gray-800 dark:bg-gray-900/95 dark:backdrop-blur-sm transition-shadow duration-200">
       <button
         type="button"
-        className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-50 lg:hidden"
+        className="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 lg:hidden dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
         onClick={() => setSidebarOpen(true)}
+        aria-label={t('open-sidebar')}
       >
-        <span className="sr-only">{t('open-sidebar')}</span>
         <Bars3Icon className="h-6 w-6" aria-hidden="true" />
       </button>
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <div className="relative flex flex-1"></div>
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <div className="dropdown dropdown-end">
-            <div className="flex items-center cursor-pointer" tabIndex={0}>
-              <span className="hidden lg:flex lg:items-center">
-                <button
-                  className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-50"
-                  aria-hidden="true"
-                >
-                  {user.name}
-                </button>
-                <ChevronDownIcon
-                  className="ml-2 h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </span>
-            </div>
-            <ul
-              tabIndex={0}
-              className="dropdown-content z-[1] menu p-2 shadow bg-base-100 border rounded w-40 space-y-1"
-            >
-              <li
-                onClick={() => {
-                  if (document.activeElement) {
-                    (document.activeElement as HTMLElement).blur();
-                  }
-                }}
+          <DropdownMenu
+            trigger={
+              <button
+                className="hidden lg:flex lg:items-center gap-x-2 px-3 py-2 text-sm font-semibold text-gray-900 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 dark:text-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                aria-label="User menu"
               >
-                <Link
-                  href="/settings/account"
-                  className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                >
-                  <div className="flex items-center">
-                    <UserCircleIcon className="w-5 h-5 mr-1" /> {t('account')}
-                  </div>
-                </Link>
-              </li>
-
-              {env.darkModeEnabled && (
-                <li>
-                  <button
-                    className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                    type="button"
-                    onClick={toggleTheme}
-                  >
-                    <div className="flex items-center">
-                      <SunIcon className="w-5 h-5 mr-1" /> {t('switch-theme')}
-                    </div>
-                  </button>
-                </li>
-              )}
-
-              <li>
-                <button
-                  className="block px-2 py-1 text-sm leading-6 text-gray-900 dark:text-gray-50 cursor-pointer"
-                  type="button"
-                  onClick={signOut}
-                >
-                  <div className="flex items-center">
-                    <ArrowRightOnRectangleIcon className="w-5 h-5 mr-1" />{' '}
-                    {t('logout')}
-                  </div>
-                </button>
-              </li>
-            </ul>
-          </div>
+                <span>{user.name}</span>
+                <ChevronDownIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200" aria-hidden="true" />
+              </button>
+            }
+            items={dropdownItems}
+            align="end"
+          />
         </div>
       </div>
     </div>
