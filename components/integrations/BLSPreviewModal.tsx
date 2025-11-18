@@ -134,36 +134,38 @@ export default function BLSPreviewModal({
                     <span className="text-base-content/60">Series ID:</span>
                     <span className="ml-2 font-mono">{previewData.seriesId}</span>
                   </div>
-                  {previewData.metadata.surveyName && (
+                  {previewData.metadata?.surveyName && (
                     <div>
                       <span className="text-base-content/60">Survey:</span>
                       <span className="ml-2">{previewData.metadata.surveyName}</span>
                     </div>
                   )}
-                  {previewData.metadata.baseYear && (
+                  {previewData.metadata?.baseYear && (
                     <div>
                       <span className="text-base-content/60">Base Year:</span>
                       <span className="ml-2">{previewData.metadata.baseYear}</span>
                     </div>
                   )}
-                  {previewData.metadata.area && (
+                  {previewData.metadata?.area && (
                     <div>
                       <span className="text-base-content/60">Area:</span>
                       <span className="ml-2">{previewData.metadata.area}</span>
                     </div>
                   )}
-                  {previewData.metadata.item && (
+                  {previewData.metadata?.item && (
                     <div>
                       <span className="text-base-content/60">Item:</span>
                       <span className="ml-2">{previewData.metadata.item}</span>
                     </div>
                   )}
-                  <div>
-                    <span className="text-base-content/60">Seasonal Adjustment:</span>
-                    <span className="ml-2">
-                      {previewData.metadata.seasonallyAdjusted ? 'Yes' : 'No'}
-                    </span>
-                  </div>
+                  {previewData.metadata && (
+                    <div>
+                      <span className="text-base-content/60">Seasonal Adjustment:</span>
+                      <span className="ml-2">
+                        {previewData.metadata.seasonallyAdjusted ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

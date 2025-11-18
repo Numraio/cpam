@@ -418,6 +418,200 @@ const menus: MenuItem[] = [
 
 ---
 
+### Loading States
+
+**Location:** `components/ui/loading/`
+
+**Components:**
+- `SkeletonTable` - Table loading state
+- `SkeletonCard` - Card loading state
+- `SkeletonKPICard` - KPI card loading state
+- `SkeletonChart` - Chart loading state
+- `SkeletonForm` - Form loading state
+- `Shimmer` - Shimmer animation overlay
+
+**Features:**
+- Animated shimmer effect (2s duration)
+- Matches component layouts
+- Dark mode support
+- Configurable rows/columns/count
+- Accessibility-friendly with semantic HTML
+
+**Usage:**
+```tsx
+import { SkeletonTable, SkeletonCard, SkeletonChart } from '@/components/ui/loading';
+
+// Table skeleton
+{isLoading ? (
+  <SkeletonTable rows={10} columns={6} showActions />
+) : (
+  <DataTable data={data} />
+)}
+
+// KPI cards skeleton
+{isLoading ? (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <SkeletonKPICard count={3} />
+  </div>
+) : (
+  kpiData.map(kpi => <KPICard {...kpi} />)
+)}
+
+// Chart skeleton
+{isLoading ? (
+  <SkeletonChart type="line" height={400} showLegend />
+) : (
+  <LineChart data={chartData} />
+)}
+```
+
+**Skeleton Components Reference:**
+
+**SkeletonTable:**
+```tsx
+interface SkeletonTableProps {
+  rows?: number;           // default: 5
+  columns?: number;        // default: 5
+  showHeader?: boolean;    // default: true
+  showActions?: boolean;   // default: true
+}
+```
+
+**SkeletonCard:**
+```tsx
+interface SkeletonCardProps {
+  count?: number;          // default: 1
+  height?: number;         // default: auto
+  showHeader?: boolean;    // default: true
+  showFooter?: boolean;    // default: false
+}
+```
+
+**SkeletonChart:**
+```tsx
+interface SkeletonChartProps {
+  height?: number;                            // default: 300
+  type?: 'line' | 'bar' | 'area' | 'pie';   // default: 'line'
+  showLegend?: boolean;                       // default: true
+}
+```
+
+---
+
+### Empty States
+
+**Location:** `components/ui/empty-states/`
+
+**Components:**
+- `EmptyState` - Generic empty state
+- `NoData` - First-time user (no entities created)
+- `NoResults` - Search/filter returned no matches
+- `ErrorState` - Failed to load data
+- `NoAccess` - Permission denied
+
+**Features:**
+- Contextual messaging
+- Call-to-action buttons
+- Icon or illustration support
+- Three size variants (sm, default, lg)
+- Accessible and responsive
+
+**Usage:**
+```tsx
+import { NoData, NoResults, ErrorState } from '@/components/ui/empty-states';
+
+// No data (first-time user)
+{pams.length === 0 && !isFiltered && (
+  <NoData
+    entityType="PAM"
+    entityTypePlural="PAMs"
+    onCreate={() => router.push('/pams/new')}
+  />
+)}
+
+// No results (filtered/searched)
+{pams.length === 0 && isFiltered && (
+  <NoResults
+    searchQuery={searchQuery}
+    onClear={() => setSearchQuery('')}
+  />
+)}
+
+// Error state
+{error && (
+  <ErrorState
+    title="Failed to load PAMs"
+    description={error.message}
+    onRetry={() => refetch()}
+  />
+)}
+```
+
+**Empty State Components Reference:**
+
+**EmptyState (Generic):**
+```tsx
+interface EmptyStateProps {
+  icon?: ReactNode;                // Icon component
+  title: string;                   // Main heading
+  description?: string;            // Descriptive text
+  action?: {                       // Primary CTA
+    label: string;
+    onClick: () => void;
+    variant?: 'primary' | 'secondary' | 'ghost';
+  };
+  secondaryAction?: {              // Secondary action
+    label: string;
+    onClick: () => void;
+  };
+  illustration?: string;           // Image path
+  size?: 'sm' | 'default' | 'lg';  // default: 'default'
+}
+```
+
+**NoData:**
+```tsx
+interface NoDataProps {
+  entityType: string;              // e.g., "PAM"
+  entityTypePlural?: string;       // e.g., "PAMs"
+  onCreate?: () => void;           // Create action
+  title?: string;                  // Custom title
+  description?: string;            // Custom description
+}
+```
+
+**NoResults:**
+```tsx
+interface NoResultsProps {
+  searchQuery?: string;            // Search term
+  onClear?: () => void;            // Clear filters action
+  title?: string;                  // Custom title
+  description?: string;            // Custom description
+}
+```
+
+**ErrorState:**
+```tsx
+interface ErrorStateProps {
+  title?: string;                  // default: "Something went wrong"
+  description?: string;            // Error message
+  onRetry?: () => void;            // Retry action
+  onContact?: () => void;          // Contact support action
+}
+```
+
+**NoAccess:**
+```tsx
+interface NoAccessProps {
+  resourceType?: string;           // e.g., "team settings"
+  title?: string;                  // Custom title
+  description?: string;            // Custom description
+  onRequestAccess?: () => void;    // Request access action
+}
+```
+
+---
+
 ### Page Header
 
 **Location:** `components/navigation/PageHeader.tsx`

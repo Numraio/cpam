@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   EyeIcon,
@@ -7,6 +8,8 @@ import {
   ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 import { formatDistance } from 'date-fns';
+import { Button } from '@/components/ui/Button';
+import { ConfirmModal } from '@/components/ui/Modal';
 
 interface Scenario {
   id: string;
@@ -25,6 +28,11 @@ interface ScenarioListProps {
 
 const ScenarioList = ({ scenarios, teamSlug, onUpdate }: ScenarioListProps) => {
   const router = useRouter();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [runCalcModalOpen, setRunCalcModalOpen] = useState(false);
+  const [isStartingCalc, setIsStartingCalc] = useState(false);
 
   const handleView = (scenarioId: string) => {
     router.push(`/scenarios/${scenarioId}`);
@@ -38,142 +46,198 @@ const ScenarioList = ({ scenarios, teamSlug, onUpdate }: ScenarioListProps) => {
     router.push(`/scenarios/${scenarioId}/compare`);
   };
 
-  const handleDelete = async (scenarioId: string, scenarioName: string) => {
-    if (!confirm(`Are you sure you want to delete scenario "${scenarioName}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (scenarioId: string, scenarioName: string) => {
+    setSelectedScenario({ id: scenarioId, name: scenarioName });
+    setDeleteModalOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!selectedScenario) return;
+
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/teams/${teamSlug}/scenarios/${scenarioId}`, {
+      const response = await fetch(`/api/teams/${teamSlug}/scenarios/${selectedScenario.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        alert('Scenario deleted successfully');
         if (onUpdate) {
           onUpdate();
         }
+        setDeleteModalOpen(false);
       } else {
-        alert('Failed to delete scenario. Please try again.');
+        console.error('Failed to delete scenario');
       }
     } catch (error) {
       console.error('Error deleting scenario:', error);
-      alert('Failed to delete scenario. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleRunCalculation = async (scenarioId: string, scenarioName: string) => {
-    if (!confirm(`Run calculation for scenario "${scenarioName}"?`)) {
-      return;
-    }
+  const handleRunCalculationClick = (scenarioId: string, scenarioName: string) => {
+    setSelectedScenario({ id: scenarioId, name: scenarioName });
+    setRunCalcModalOpen(true);
+  };
 
+  const handleRunCalculationConfirm = async () => {
+    if (!selectedScenario) return;
+
+    setIsStartingCalc(true);
     try {
-      const response = await fetch(`/api/teams/${teamSlug}/scenarios/${scenarioId}/calculate`, {
+      const response = await fetch(`/api/teams/${teamSlug}/scenarios/${selectedScenario.id}/calculate`, {
         method: 'POST',
       });
 
       if (response.ok) {
         const result = await response.json();
-        alert('Calculation started successfully');
+        setRunCalcModalOpen(false);
         router.push(`/calculations/${result.calculation.id}`);
       } else {
-        alert('Failed to start calculation. Please try again.');
+        console.error('Failed to start calculation');
       }
     } catch (error) {
       console.error('Error starting calculation:', error);
-      alert('Failed to start calculation. Please try again.');
+    } finally {
+      setIsStartingCalc(false);
     }
   };
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
-      <table className="table table-zebra w-full">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Index Overrides</th>
-            <th>Item Overrides</th>
-            <th>Created</th>
-            <th className="text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {scenarios.map((scenario) => {
-            const overrides = scenario.metadata?.overrides || {};
-            const indexOverrideCount = Object.keys(overrides.indexOverrides || {}).length;
-            const itemOverrideCount = Object.keys(overrides.itemOverrides || {}).length;
-
-            return (
-            <tr key={scenario.id} className="hover">
-              <td className="font-medium">{scenario.name}</td>
-              <td className="text-sm text-gray-600">
-                {scenario.description || '-'}
-              </td>
-              <td className="text-sm">
-                <span className="badge badge-primary badge-sm">
-                  {indexOverrideCount}
-                </span>
-              </td>
-              <td className="text-sm">
-                <span className="badge badge-secondary badge-sm">
-                  {itemOverrideCount}
-                </span>
-              </td>
-              <td className="text-sm text-gray-500">
-                {formatDistance(new Date(scenario.createdAt), new Date(), {
-                  addSuffix: true,
-                })}
-              </td>
-              <td>
-                <div className="flex justify-end gap-2">
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => handleView(scenario.id)}
-                    title="View details"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => handleEdit(scenario.id)}
-                    title="Edit scenario"
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    className="btn btn-ghost btn-xs text-info"
-                    onClick={() => handleCompare(scenario.id)}
-                    title="Compare with baseline"
-                  >
-                    <ArrowsRightLeftIcon className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    className="btn btn-ghost btn-xs text-success"
-                    onClick={() => handleRunCalculation(scenario.id, scenario.name)}
-                    title="Run calculation"
-                  >
-                    <BeakerIcon className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    className="btn btn-ghost btn-xs text-error"
-                    onClick={() => handleDelete(scenario.id, scenario.name)}
-                    title="Delete scenario"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              </td>
+    <>
+      <div className="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Description
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Index Overrides
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Item Overrides
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {scenarios.map((scenario) => {
+              const overrides = scenario.metadata?.overrides || {};
+              const indexOverrideCount = Object.keys(overrides.indexOverrides || {}).length;
+              const itemOverrideCount = Object.keys(overrides.itemOverrides || {}).length;
+
+              return (
+                <tr key={scenario.id} className="hover:bg-gray-50 transition-colors duration-normal">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="font-medium text-gray-900">{scenario.name}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-600 truncate max-w-xs block">
+                      {scenario.description || '-'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+                      {indexOverrideCount} {indexOverrideCount === 1 ? 'override' : 'overrides'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                      {itemOverrideCount} {itemOverrideCount === 1 ? 'override' : 'overrides'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDistance(new Date(scenario.createdAt), new Date(), {
+                      addSuffix: true,
+                    })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleView(scenario.id)}
+                        title="View details"
+                        className="!p-2"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(scenario.id)}
+                        title="Edit scenario"
+                        className="!p-2"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCompare(scenario.id)}
+                        title="Compare with baseline"
+                        className="!p-2 text-blue-600 hover:bg-blue-50"
+                      >
+                        <ArrowsRightLeftIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRunCalculationClick(scenario.id, scenario.name)}
+                        title="Run calculation"
+                        className="!p-2 text-success hover:bg-success-light/10"
+                      >
+                        <BeakerIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(scenario.id, scenario.name)}
+                        title="Delete scenario"
+                        className="!p-2 text-error hover:bg-error-light/10"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Scenario"
+        message={`Are you sure you want to delete scenario "${selectedScenario?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        confirmVariant="danger"
+        isLoading={isDeleting}
+      />
+
+      <ConfirmModal
+        isOpen={runCalcModalOpen}
+        onClose={() => setRunCalcModalOpen(false)}
+        onConfirm={handleRunCalculationConfirm}
+        title="Run Calculation"
+        message={`Start a new calculation for scenario "${selectedScenario?.name}"?`}
+        confirmText="Start Calculation"
+        confirmVariant="primary"
+        isLoading={isStartingCalc}
+      />
+    </>
   );
 };
 

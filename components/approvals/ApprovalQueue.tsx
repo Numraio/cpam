@@ -1,6 +1,7 @@
 import { formatDistance } from 'date-fns';
 import { useRouter } from 'next/router';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardBody } from '@/components/ui/Card';
 import {
   ClockIcon,
   CheckCircleIcon,
@@ -36,30 +37,44 @@ export default function ApprovalQueue({ approvals, isLoading, onUpdate }: Approv
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="card bg-base-100 shadow-xl animate-pulse">
-            <div className="card-body">
-              <div className="h-6 bg-base-300 rounded w-3/4" />
-              <div className="h-4 bg-base-300 rounded w-1/2" />
-            </div>
-          </div>
+          <Card key={i} variant="elevated" className="animate-pulse">
+            <CardBody>
+              <div className="h-6 bg-gray-200 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 rounded w-1/2 mt-2" />
+            </CardBody>
+          </Card>
         ))}
       </div>
     );
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return <span className="badge badge-success gap-2"><CheckCircleIcon className="h-4 w-4" />Approved</span>;
-      case 'REJECTED':
-        return <span className="badge badge-error gap-2"><XCircleIcon className="h-4 w-4" />Rejected</span>;
-      case 'PENDING':
-        return <span className="badge badge-warning gap-2"><ClockIcon className="h-4 w-4" />Pending</span>;
-      default:
-        return <span className="badge">{status}</span>;
-    }
+    const badges: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+      APPROVED: {
+        bg: 'bg-success-light/20',
+        text: 'text-success',
+        icon: <CheckCircleIcon className="h-4 w-4" />,
+      },
+      REJECTED: {
+        bg: 'bg-error-light/20',
+        text: 'text-error',
+        icon: <XCircleIcon className="h-4 w-4" />,
+      },
+      PENDING: {
+        bg: 'bg-warning-light/20',
+        text: 'text-warning',
+        icon: <ClockIcon className="h-4 w-4" />,
+      },
+    };
+    const badge = badges[status] || { bg: 'bg-gray-100', text: 'text-gray-700', icon: null };
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
+        {badge.icon}
+        {status.charAt(0) + status.slice(1).toLowerCase()}
+      </span>
+    );
   };
 
   const getEntityTypeLabel = (entityType: string) => {
@@ -91,62 +106,68 @@ export default function ApprovalQueue({ approvals, isLoading, onUpdate }: Approv
   return (
     <div className="space-y-3">
       {approvals.length === 0 ? (
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body text-center py-12">
-            <CheckCircleIcon className="h-16 w-16 mx-auto text-success mb-4" />
-            <h3 className="text-xl font-bold">All caught up!</h3>
+        <Card variant="elevated">
+          <CardBody className="flex flex-col items-center text-center py-12">
+            <CheckCircleIcon className="h-16 w-16 text-success mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">All caught up!</h3>
             <p className="text-gray-600">There are no pending approvals at this time.</p>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
       ) : (
         approvals.map((approval) => (
-          <div
+          <Card
             key={approval.id}
-            className={`card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow ${
-              isUrgent(approval.createdAt) && approval.status === 'PENDING' ? 'border-2 border-warning' : ''
+            variant="elevated"
+            className={`hover:shadow-lg transition-shadow duration-normal ${
+              isUrgent(approval.createdAt) && approval.status === 'PENDING' ? 'border-l-4 border-l-warning' : ''
             }`}
           >
-            <div className="card-body">
+            <CardBody>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="card-title">{getEntityTypeLabel(approval.entityType)}</h3>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">{getEntityTypeLabel(approval.entityType)}</h3>
                     {getStatusBadge(approval.status)}
                     {isUrgent(approval.createdAt) && approval.status === 'PENDING' && (
-                      <span className="badge badge-warning">Urgent</span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-light/20 text-warning">
+                        Urgent
+                      </span>
                     )}
                   </div>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>Entity ID: <span className="font-mono">{approval.entityId.substring(0, 12)}...</span></p>
+                  <div className="text-sm text-gray-600 space-y-1.5">
+                    <p>
+                      Entity ID: <span className="font-mono text-gray-900">{approval.entityId.substring(0, 12)}...</span>
+                    </p>
                     <p>
                       Created {formatDistance(new Date(approval.createdAt), new Date(), { addSuffix: true })}
                       {getDaysOld(approval.createdAt) > 0 && (
-                        <span className="ml-2">({getDaysOld(approval.createdAt)} days old)</span>
+                        <span className="ml-2 text-gray-500">({getDaysOld(approval.createdAt)} days old)</span>
                       )}
                     </p>
                     {approval.status !== 'PENDING' && approval.approver && (
                       <p>
-                        {approval.status === 'APPROVED' ? 'Approved' : 'Rejected'} by {approval.approver.name || approval.approver.email}
+                        {approval.status === 'APPROVED' ? 'Approved' : 'Rejected'} by{' '}
+                        <span className="font-medium text-gray-900">{approval.approver.name || approval.approver.email}</span>
                       </p>
                     )}
                     {approval.comments && (
-                      <p className="italic">"{approval.comments}"</p>
+                      <p className="italic text-gray-700 mt-2">"{approval.comments}"</p>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button
                     size="sm"
-                    color="primary"
-                    startIcon={<EyeIcon className="h-4 w-4" />}
+                    variant="primary"
+                    leftIcon={<EyeIcon className="h-4 w-4" />}
                     onClick={() => handleView(approval)}
                   >
                     Review
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardBody>
+          </Card>
         ))
       )}
     </div>

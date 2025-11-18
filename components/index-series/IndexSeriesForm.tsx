@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button } from 'react-daisyui';
-import { InputWithLabel } from '@/components/shared';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardBody } from '@/components/ui/Card';
 import BLSSeriesSelector from '@/components/integrations/BLSSeriesSelector';
 import BLSPreviewModal from '@/components/integrations/BLSPreviewModal';
 
@@ -116,60 +117,74 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Basic Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputWithLabel
-              label="Series Code"
-              name="seriesCode"
-              type="text"
-              value={formData.seriesCode}
-              onChange={handleChange}
-              error={errors.seriesCode}
-              placeholder="e.g., PLATTS_BRENT, USD_EUR"
-              disabled={!!initialData} // Series code cannot be changed after creation
-              required
-            />
-            <InputWithLabel
-              label="Name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              error={errors.name}
-              placeholder="Descriptive name"
-              required
-            />
+      <Card variant="elevated">
+        <CardBody>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Series Code <span className="text-error">*</span>
+              </label>
+              <Input
+                name="seriesCode"
+                type="text"
+                value={formData.seriesCode}
+                onChange={handleChange}
+                error={errors.seriesCode}
+                placeholder="e.g., PLATTS_BRENT, USD_EUR"
+                disabled={!!initialData}
+                required
+              />
+              {errors.seriesCode && (
+                <p className="mt-1 text-sm text-error">{errors.seriesCode}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Name <span className="text-error">*</span>
+              </label>
+              <Input
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                error={errors.name}
+                placeholder="Descriptive name"
+                required
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-error">{errors.name}</p>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label className="label">
-              <span className="label-text">Description</span>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Description
             </label>
             <textarea
               name="description"
-              className="textarea textarea-bordered w-full"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal"
               rows={3}
               value={formData.description}
               onChange={handleChange}
               placeholder="Optional description"
             />
           </div>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Data Configuration</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card variant="elevated">
+        <CardBody>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Data Configuration</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">
-                <span className="label-text">Provider</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Provider <span className="text-error">*</span>
               </label>
               <select
                 name="provider"
-                className="select select-bordered w-full"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
                 value={formData.provider}
                 onChange={handleChange}
                 required
@@ -184,19 +199,17 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
                 <option value="API">Custom API</option>
               </select>
               {errors.provider && (
-                <label className="label">
-                  <span className="label-text-alt text-error">{errors.provider}</span>
-                </label>
+                <p className="mt-1 text-sm text-error">{errors.provider}</p>
               )}
             </div>
 
             <div>
-              <label className="label">
-                <span className="label-text">Data Type</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Data Type <span className="text-error">*</span>
               </label>
               <select
                 name="dataType"
-                className="select select-bordered w-full"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
                 value={formData.dataType}
                 onChange={handleChange}
                 required
@@ -206,30 +219,32 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
                 <option value="CUSTOM">Custom / Other</option>
               </select>
               {errors.dataType && (
-                <label className="label">
-                  <span className="label-text-alt text-error">{errors.dataType}</span>
-                </label>
+                <p className="mt-1 text-sm text-error">{errors.dataType}</p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputWithLabel
-              label="Unit (Optional)"
-              name="unit"
-              type="text"
-              value={formData.unit}
-              onChange={handleChange}
-              placeholder="e.g., USD/bbl, EUR/USD"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Unit (Optional)
+              </label>
+              <Input
+                name="unit"
+                type="text"
+                value={formData.unit}
+                onChange={handleChange}
+                placeholder="e.g., USD/bbl, EUR/USD"
+              />
+            </div>
 
             <div>
-              <label className="label">
-                <span className="label-text">Frequency</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Frequency <span className="text-error">*</span>
               </label>
               <select
                 name="frequency"
-                className="select select-bordered w-full"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
                 value={formData.frequency}
                 onChange={handleChange}
                 required
@@ -239,29 +254,29 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
                 <option value="MONTHLY">Monthly</option>
               </select>
               {errors.frequency && (
-                <label className="label">
-                  <span className="label-text-alt text-error">{errors.frequency}</span>
-                </label>
+                <p className="mt-1 text-sm text-error">{errors.frequency}</p>
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
-      <div className="card bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Provider Configuration</h2>
+      <Card variant="elevated">
+        <CardBody>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Provider Configuration</h2>
 
           {formData.provider === 'BLS' && showBLSSelector ? (
             <div>
-              <div className="alert alert-info mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>
-                  Select a BLS series from the catalog below. Data will be automatically imported from the Bureau of Labor Statistics API.
-                </span>
-              </div>
+              <Card variant="bordered" className="border-l-4 border-l-primary mb-4">
+                <CardBody className="flex items-start gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-primary-600 mt-0.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p className="text-sm text-gray-700">
+                    Select a BLS series from the catalog below. Data will be automatically imported from the Bureau of Labor Statistics API.
+                  </p>
+                </CardBody>
+              </Card>
 
               <BLSSeriesSelector
                 onSelect={handleBLSSeriesSelect}
@@ -269,23 +284,25 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               />
             </div>
           ) : (
-            <div className="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span>
-                Provider-specific configuration (API credentials, sync schedule, field mapping)
-                will be available after creating the series.
-              </span>
-            </div>
+            <Card variant="bordered" className="border-l-4 border-l-primary">
+              <CardBody className="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-primary-600 mt-0.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p className="text-sm text-gray-700">
+                  Provider-specific configuration (API credentials, sync schedule, field mapping)
+                  will be available after creating the series.
+                </p>
+              </CardBody>
+            </Card>
           )}
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
-      <div className="flex gap-4 justify-end">
+      <div className="flex gap-3 justify-end">
         <Button
           type="button"
-          color="ghost"
+          variant="ghost"
           size="md"
           onClick={onCancel}
           disabled={isSubmitting}
@@ -294,9 +311,9 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
         </Button>
         <Button
           type="submit"
-          color="primary"
+          variant="primary"
           size="md"
-          loading={isSubmitting}
+          isLoading={isSubmitting}
           disabled={isSubmitting}
         >
           {initialData ? 'Update Index Series' : 'Create Index Series'}

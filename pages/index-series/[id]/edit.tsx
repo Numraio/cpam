@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
-import { Button } from 'react-daisyui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardBody } from '@/components/ui/Card';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import IndexSeriesForm from '@/components/index-series/IndexSeriesForm';
 import useIndexSeriesDetail from '@/hooks/useIndexSeriesDetail';
@@ -22,9 +23,11 @@ const EditIndexSeriesPage: NextPageWithLayout = () => {
   if (isError || !indexSeries) {
     return (
       <div className="p-6">
-        <div className="alert alert-error">
-          <span>Failed to load index series. Please try again.</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-error">
+          <CardBody>
+            <p className="text-error font-medium">Failed to load index series. Please try again.</p>
+          </CardBody>
+        </Card>
       </div>
     );
   }
@@ -59,25 +62,27 @@ const EditIndexSeriesPage: NextPageWithLayout = () => {
       <div className="mb-6">
         <Button
           size="sm"
-          color="ghost"
-          startIcon={<ArrowLeftIcon className="h-4 w-4" />}
+          variant="ghost"
+          leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
           onClick={() => router.push(`/index-series/${id}`)}
         >
           Back to Index Series
         </Button>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Edit Index Series</h1>
-        <p className="text-gray-600 mt-1 font-mono text-sm">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Edit Index Series</h1>
+        <p className="text-gray-600 mt-2 font-mono text-sm">
           Series Code: {indexSeries.seriesCode}
         </p>
       </div>
 
       {error && (
-        <div className="alert alert-error mb-6">
-          <span>{error}</span>
-        </div>
+        <Card variant="elevated" className="border-l-4 border-l-error mb-6">
+          <CardBody>
+            <p className="text-error font-medium">{error}</p>
+          </CardBody>
+        </Card>
       )}
 
       <IndexSeriesForm
