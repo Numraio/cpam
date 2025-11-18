@@ -98,10 +98,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             ref={ref}
             id={id}
             className={cn(
-              'flex items-center justify-between w-full rounded-lg border bg-white px-4 py-3 text-base transition-all duration-normal focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed',
+              'flex items-center justify-between w-full rounded-lg border bg-white dark:bg-gray-900 px-4 py-3 text-base text-gray-900 dark:text-gray-100 transition-all duration-normal focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed',
               error
                 ? 'border-error focus:ring-error'
-                : 'border-gray-300 hover:border-gray-400'
+                : 'border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'
             )}
             aria-invalid={!!error}
             aria-describedby={
@@ -121,7 +121,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           <SelectPrimitive.Portal>
             <SelectPrimitive.Content
               className={cn(
-                'overflow-hidden bg-white rounded-lg border border-gray-200 shadow-lg',
+                'overflow-hidden bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg',
                 'data-[state=open]:animate-in data-[state=closed]:animate-out',
                 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
                 'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -130,8 +130,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               position="popper"
               sideOffset={4}
             >
-              <SelectPrimitive.ScrollUpButton className="flex items-center justify-center h-6 bg-white cursor-default">
-                <ChevronUpIcon className="h-4 w-4 text-gray-400" />
+              <SelectPrimitive.ScrollUpButton className="flex items-center justify-center h-6 bg-white dark:bg-gray-900 cursor-default">
+                <ChevronUpIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               </SelectPrimitive.ScrollUpButton>
 
               <SelectPrimitive.Viewport className="p-1">
@@ -146,8 +146,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 ))}
               </SelectPrimitive.Viewport>
 
-              <SelectPrimitive.ScrollDownButton className="flex items-center justify-center h-6 bg-white cursor-default">
-                <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+              <SelectPrimitive.ScrollDownButton className="flex items-center justify-center h-6 bg-white dark:bg-gray-900 cursor-default">
+                <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               </SelectPrimitive.ScrollDownButton>
             </SelectPrimitive.Content>
           </SelectPrimitive.Portal>
@@ -186,8 +186,8 @@ const SelectItem = forwardRef<
     <SelectPrimitive.Item
       ref={ref}
       className={cn(
-        'relative flex items-center w-full cursor-pointer select-none rounded px-3 py-2 text-sm outline-none',
-        'hover:bg-gray-100 focus:bg-gray-100',
+        'relative flex items-center w-full cursor-pointer select-none rounded px-3 py-2 text-sm outline-none text-gray-900 dark:text-gray-100',
+        'hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
@@ -195,11 +195,11 @@ const SelectItem = forwardRef<
     >
       <span className="absolute left-3 flex h-3.5 w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="h-4 w-4 text-primary-600" />
+          <CheckIcon className="h-4 w-4 text-primary-600 dark:text-primary-400" />
         </SelectPrimitive.ItemIndicator>
       </span>
 
-      <SelectPrimitive.ItemText className="pl-6">
+      <SelectPrimitive.ItemText className="pl-7">
         {children}
       </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
@@ -258,10 +258,10 @@ export const SearchableSelect = forwardRef<
             ref={ref}
             id={props.id}
             className={cn(
-              'flex items-center justify-between w-full rounded-lg border bg-white px-4 py-3 text-base transition-all duration-normal focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed',
+              'flex items-center justify-between w-full rounded-lg border bg-white dark:bg-gray-900 px-4 py-3 text-base text-gray-900 dark:text-gray-100 transition-all duration-normal focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed',
               props.error
                 ? 'border-error focus:ring-error'
-                : 'border-gray-300 hover:border-gray-400'
+                : 'border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'
             )}
           >
             <SelectPrimitive.Value placeholder={props.placeholder} />
@@ -273,7 +273,7 @@ export const SearchableSelect = forwardRef<
           <SelectPrimitive.Portal>
             <SelectPrimitive.Content
               className={cn(
-                'overflow-hidden bg-white rounded-lg border border-gray-200 shadow-lg',
+                'overflow-hidden bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-lg',
                 'data-[state=open]:animate-in data-[state=closed]:animate-out',
                 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
                 'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
