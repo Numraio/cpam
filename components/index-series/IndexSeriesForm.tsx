@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Input, Textarea } from '@/components/ui/Input';
+import { Select, SelectOption } from '@/components/ui/Select';
 import { Card, CardBody } from '@/components/ui/Card';
 import BLSSeriesSelector from '@/components/integrations/BLSSeriesSelector';
 import BLSPreviewModal from '@/components/integrations/BLSPreviewModal';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface IndexSeriesFormProps {
   initialData?: any;
@@ -27,6 +29,30 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
   const [showBLSPreview, setShowBLSPreview] = useState(false);
   const [selectedBLSSeries, setSelectedBLSSeries] = useState<any>(null);
 
+  // Select options
+  const providerOptions: SelectOption[] = [
+    { value: 'MANUAL', label: 'Manual Entry' },
+    { value: 'BLS', label: 'BLS (Bureau of Labor Statistics)' },
+    { value: 'PLATTS', label: 'Platts' },
+    { value: 'OANDA', label: 'Oanda (FX)' },
+    { value: 'ARGUS', label: 'Argus' },
+    { value: 'LME', label: 'London Metal Exchange' },
+    { value: 'CME', label: 'Chicago Mercantile Exchange' },
+    { value: 'API', label: 'Custom API' },
+  ];
+
+  const dataTypeOptions: SelectOption[] = [
+    { value: 'INDEX', label: 'Index / Commodity Price' },
+    { value: 'FX', label: 'Foreign Exchange Rate' },
+    { value: 'CUSTOM', label: 'Custom / Other' },
+  ];
+
+  const frequencyOptions: SelectOption[] = [
+    { value: 'DAILY', label: 'Daily' },
+    { value: 'WEEKLY', label: 'Weekly' },
+    { value: 'MONTHLY', label: 'Monthly' },
+  ];
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -41,8 +67,17 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
     }
   }, [initialData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleSelectChange = (name: string) => (value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Show BLS selector when BLS provider is selected
@@ -53,7 +88,7 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
       setSelectedBLSSeries(null);
     }
 
-    // Clear error for this field when user starts typing
+    // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -119,52 +154,37 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card variant="elevated">
         <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Series Code <span className="text-error">*</span>
-              </label>
-              <Input
-                name="seriesCode"
-                type="text"
-                value={formData.seriesCode}
-                onChange={handleChange}
-                error={errors.seriesCode}
-                placeholder="e.g., PLATTS_BRENT, USD_EUR"
-                disabled={!!initialData}
-                required
-              />
-              {errors.seriesCode && (
-                <p className="mt-1 text-sm text-error">{errors.seriesCode}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Name <span className="text-error">*</span>
-              </label>
-              <Input
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                error={errors.name}
-                placeholder="Descriptive name"
-                required
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-error">{errors.name}</p>
-              )}
-            </div>
+            <Input
+              label="Series Code"
+              name="seriesCode"
+              type="text"
+              value={formData.seriesCode}
+              onChange={handleChange}
+              error={errors.seriesCode}
+              placeholder="e.g., PLATTS_BRENT, USD_EUR"
+              disabled={!!initialData}
+              required
+              autoComplete="off"
+            />
+            <Input
+              label="Name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="Descriptive name"
+              required
+              autoComplete="off"
+            />
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Description
-            </label>
-            <textarea
+            <Textarea
+              label="Description"
               name="description"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal"
               rows={3}
               value={formData.description}
               onChange={handleChange}
@@ -176,107 +196,63 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
 
       <Card variant="elevated">
         <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Data Configuration</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Data Configuration</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Provider <span className="text-error">*</span>
-              </label>
-              <select
-                name="provider"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
-                value={formData.provider}
-                onChange={handleChange}
-                required
-              >
-                <option value="MANUAL">Manual Entry</option>
-                <option value="BLS">BLS (Bureau of Labor Statistics)</option>
-                <option value="PLATTS">Platts</option>
-                <option value="OANDA">Oanda (FX)</option>
-                <option value="ARGUS">Argus</option>
-                <option value="LME">London Metal Exchange</option>
-                <option value="CME">Chicago Mercantile Exchange</option>
-                <option value="API">Custom API</option>
-              </select>
-              {errors.provider && (
-                <p className="mt-1 text-sm text-error">{errors.provider}</p>
-              )}
-            </div>
+            <Select
+              label="Provider"
+              value={formData.provider}
+              onValueChange={handleSelectChange('provider')}
+              options={providerOptions}
+              error={errors.provider}
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Data Type <span className="text-error">*</span>
-              </label>
-              <select
-                name="dataType"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
-                value={formData.dataType}
-                onChange={handleChange}
-                required
-              >
-                <option value="INDEX">Index / Commodity Price</option>
-                <option value="FX">Foreign Exchange Rate</option>
-                <option value="CUSTOM">Custom / Other</option>
-              </select>
-              {errors.dataType && (
-                <p className="mt-1 text-sm text-error">{errors.dataType}</p>
-              )}
-            </div>
+            <Select
+              label="Data Type"
+              value={formData.dataType}
+              onValueChange={handleSelectChange('dataType')}
+              options={dataTypeOptions}
+              error={errors.dataType}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Unit (Optional)
-              </label>
-              <Input
-                name="unit"
-                type="text"
-                value={formData.unit}
-                onChange={handleChange}
-                placeholder="e.g., USD/bbl, EUR/USD"
-              />
-            </div>
+            <Input
+              label="Unit"
+              name="unit"
+              type="text"
+              value={formData.unit}
+              onChange={handleChange}
+              placeholder="e.g., USD/bbl, EUR/USD"
+              helperText="Optional"
+              autoComplete="off"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Frequency <span className="text-error">*</span>
-              </label>
-              <select
-                name="frequency"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-normal bg-white"
-                value={formData.frequency}
-                onChange={handleChange}
-                required
-              >
-                <option value="DAILY">Daily</option>
-                <option value="WEEKLY">Weekly</option>
-                <option value="MONTHLY">Monthly</option>
-              </select>
-              {errors.frequency && (
-                <p className="mt-1 text-sm text-error">{errors.frequency}</p>
-              )}
-            </div>
+            <Select
+              label="Frequency"
+              value={formData.frequency}
+              onValueChange={handleSelectChange('frequency')}
+              options={frequencyOptions}
+              error={errors.frequency}
+              required
+            />
           </div>
         </CardBody>
       </Card>
 
       <Card variant="elevated">
         <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Provider Configuration</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Provider Configuration</h2>
 
           {formData.provider === 'BLS' && showBLSSelector ? (
             <div>
-              <Card variant="bordered" className="border-l-4 border-l-primary mb-4">
-                <CardBody className="flex items-start gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-primary-600 mt-0.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <p className="text-sm text-gray-700">
-                    Select a BLS series from the catalog below. Data will be automatically imported from the Bureau of Labor Statistics API.
-                  </p>
-                </CardBody>
-              </Card>
+              <div className="flex items-start gap-3 p-4 mb-4 bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary-600 rounded-lg">
+                <InformationCircleIcon className="h-5 w-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Select a BLS series from the catalog below. Data will be automatically imported from the Bureau of Labor Statistics API.
+                </p>
+              </div>
 
               <BLSSeriesSelector
                 onSelect={handleBLSSeriesSelect}
@@ -284,17 +260,13 @@ const IndexSeriesForm = ({ initialData, onSubmit, onCancel }: IndexSeriesFormPro
               />
             </div>
           ) : (
-            <Card variant="bordered" className="border-l-4 border-l-primary">
-              <CardBody className="flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-primary-600 mt-0.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <p className="text-sm text-gray-700">
-                  Provider-specific configuration (API credentials, sync schedule, field mapping)
-                  will be available after creating the series.
-                </p>
-              </CardBody>
-            </Card>
+            <div className="flex items-start gap-3 p-4 bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary-600 rounded-lg">
+              <InformationCircleIcon className="h-5 w-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Provider-specific configuration (API credentials, sync schedule, field mapping)
+                will be available after creating the series.
+              </p>
+            </div>
           )}
         </CardBody>
       </Card>

@@ -4,7 +4,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { Input } from '@/components/ui/Input';
+import { Select, SelectOption } from '@/components/ui/Select';
+import { Card, CardBody } from '@/components/ui/Card';
+import { ErrorState } from '@/components/ui/empty-states/ErrorState';
+import { NoResults } from '@/components/ui/empty-states/NoResults';
 
 interface BLSSeriesOption {
   value: string;
@@ -69,37 +74,58 @@ export default function BLSSeriesSelector({
 
   // Get unique categories
   const categories = ['ALL', ...Array.from(new Set(series.map((s) => s.category)))];
+  const categoryOptions: SelectOption[] = categories.map((cat) => ({
+    value: cat,
+    label: cat === 'ALL' ? 'All Categories' : cat,
+  }));
 
   const handleSelect = (seriesOption: BLSSeriesOption) => {
     onSelect(seriesOption.value, seriesOption);
   };
 
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('ALL');
+  };
+
   if (loading) {
     return (
-      <div className={`flex items-center justify-center py-8 ${className}`}>
-        <div className="loading loading-spinner loading-lg"></div>
-        <span className="ml-3 text-base-content">Loading BLS series catalog...</span>
+      <div className={`flex items-center justify-center py-12 ${className}`}>
+        <svg
+          className="animate-spin h-8 w-8 text-primary-600 dark:text-primary-400"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+        <span className="ml-3 text-gray-700 dark:text-gray-300">
+          Loading BLS series catalog...
+        </span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`alert alert-error ${className}`}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <span>Error loading BLS series: {error}</span>
+      <div className={className}>
+        <ErrorState
+          title="Failed to load BLS series"
+          description={`Error: ${error}`}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -107,104 +133,83 @@ export default function BLSSeriesSelector({
   return (
     <div className={className}>
       {/* Search and Filter Controls */}
-      <div className="mb-4 space-y-3">
-        <div>
-          <label className="label">
-            <span className="label-text font-medium">Search BLS Series</span>
-          </label>
-          <input
-            type="text"
-            placeholder="Search by name, description, or series ID..."
-            className="input input-bordered w-full"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <Input
+          label="Search BLS Series"
+          type="text"
+          placeholder="Search by name, description, or series ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          autoComplete="off"
+        />
 
-        <div>
-          <label className="label">
-            <span className="label-text font-medium">Filter by Category</span>
-          </label>
-          <select
-            className="select select-bordered w-full"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === 'ALL' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label="Filter by Category"
+          value={categoryFilter}
+          onValueChange={setCategoryFilter}
+          options={categoryOptions}
+        />
       </div>
 
       {/* Series List */}
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-96 overflow-y-auto">
         {filteredSeries.length === 0 ? (
-          <div className="text-center py-8 text-base-content/60">
-            No series found matching your search criteria.
-          </div>
+          <NoResults
+            searchQuery={searchQuery !== '' ? searchQuery : undefined}
+            onClear={searchQuery !== '' || categoryFilter !== 'ALL' ? handleClearFilters : undefined}
+          />
         ) : (
           filteredSeries.map((seriesOption) => (
-            <div
+            <Card
               key={seriesOption.value}
-              className={`card bg-base-100 border border-base-300 hover:border-primary hover:shadow-md transition-all cursor-pointer ${
-                selectedSeriesId === seriesOption.value ? 'border-primary shadow-md' : ''
+              variant="outlined"
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary-300 dark:hover:border-primary-700 ${
+                selectedSeriesId === seriesOption.value
+                  ? 'border-primary-600 dark:border-primary-500 shadow-md bg-primary-50 dark:bg-primary-900/10'
+                  : ''
               }`}
               onClick={() => handleSelect(seriesOption)}
             >
-              <div className="card-body p-4">
+              <CardBody className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-base">{seriesOption.label}</h3>
-                    <p className="text-sm text-base-content/70 mt-1">
+                    <h3 className="font-semibold text-base text-gray-900 dark:text-gray-100">
+                      {seriesOption.label}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {seriesOption.description}
                     </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <span className="badge badge-primary badge-sm">
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
                         {seriesOption.category}
                       </span>
-                      <span className="badge badge-outline badge-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
                         {seriesOption.value}
                       </span>
-                      <span className="badge badge-ghost badge-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                         {seriesOption.frequency}
                       </span>
                       {seriesOption.seasonalAdjustment && (
-                        <span className="badge badge-ghost badge-sm">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                           {seriesOption.seasonalAdjustment}
                         </span>
                       )}
                     </div>
                   </div>
                   {selectedSeriesId === seriesOption.value && (
-                    <div className="ml-3">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-primary"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                    <div className="ml-4">
+                      <CheckCircleIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           ))
         )}
       </div>
 
       {/* Results Count */}
-      <div className="mt-4 text-sm text-base-content/60 text-center">
+      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 text-center">
         Showing {filteredSeries.length} of {series.length} series
       </div>
     </div>
