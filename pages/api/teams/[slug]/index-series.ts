@@ -8,6 +8,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
+import { ingestBLSData } from '@/lib/integrations/bls/ingestion-service';
 
 export default async function handler(
   req: NextApiRequest,
@@ -86,6 +87,23 @@ async function handleCreate(
         frequency,
       },
     });
+
+    // Auto-sync BLS data with 20-year historical backfill
+    if (provider === 'BLS') {
+      // Extract BLS series ID from seriesCode (format: "BLS_CUUR0000SA0" or just "CUUR0000SA0")
+      const blsSeriesId = seriesCode.startsWith('BLS_')
+        ? seriesCode.substring(4)
+        : seriesCode;
+
+      // Trigger BLS ingestion in background (don't await to avoid timeout)
+      ingestBLSData(indexSeries.id, blsSeriesId, tenantId, {
+        yearsBack: 20, // Full 20-year historical backfill
+        force: false,
+        includeCatalog: true,
+      }).catch((error) => {
+        console.error(`Auto-sync failed for BLS series ${blsSeriesId}:`, error);
+      });
+    }
 
     return res.status(201).json({
       indexSeries,
