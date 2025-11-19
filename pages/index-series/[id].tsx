@@ -43,12 +43,17 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
       });
 
       if (response.ok) {
+        setDeleteModalOpen(false);
+        // Redirect to list page after successful deletion
         router.push('/index-series');
       } else {
-        console.error('Failed to delete index series');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Failed to delete index series:', errorData);
+        alert(`Failed to delete: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting index series:', error);
+      alert(`Error deleting: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsDeleting(false);
     }
@@ -262,14 +267,14 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
       </Card>
 
       <ConfirmModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
         onConfirm={handleDeleteConfirm}
         title="Delete Index Series"
-        message="Are you sure you want to delete this index series? This action cannot be undone."
-        confirmText="Delete"
+        description="Are you sure you want to delete this index series? All associated data will be permanently removed. This action cannot be undone."
+        confirmLabel="Delete"
         confirmVariant="danger"
-        isLoading={isDeleting}
+        loading={isDeleting}
       />
     </div>
   );
