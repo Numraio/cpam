@@ -7,11 +7,13 @@ import { AccountLayout } from '@/components/layouts';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { ConfirmModal } from '@/components/ui/Modal';
-import { PencilIcon, ArrowLeftIcon, TrashIcon, ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, ArrowLeftIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/shared';
 import useIndexSeriesDetail from '@/hooks/useIndexSeriesDetail';
 import { formatDistance } from 'date-fns';
 import BLSIngestionStatus from '@/components/integrations/BLSIngestionStatus';
+import PriceHistoryChart from '@/components/index-series/PriceHistoryChart';
+import RecentValuesTable from '@/components/index-series/RecentValuesTable';
 
 const IndexSeriesDetailPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -245,31 +247,21 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
         />
       )}
 
-      {/* Price History Chart - Placeholder */}
-      <Card variant="elevated" className="mt-6">
-        <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Price History</h2>
-          <Card variant="bordered" className="border-l-4 border-l-warning">
-            <CardBody className="flex items-start gap-3">
-              <ExclamationTriangleIcon className="h-6 w-6 text-warning flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-gray-700">
-                Price chart visualization not yet implemented. This will show historical price data with interactive zoom and pan controls.
-              </p>
-            </CardBody>
-          </Card>
-        </CardBody>
-      </Card>
+      {/* Price History Chart */}
+      <PriceHistoryChart
+        indexSeriesId={indexSeries.id}
+        teamSlug={teamSlug}
+        unit={indexSeries.unit}
+        className="mt-6"
+      />
 
-      {/* Recent Values - Placeholder */}
-      <Card variant="elevated" className="mt-6">
-        <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Values</h2>
-          <div className="text-center py-12 text-gray-500">
-            <p className="font-medium">No price values found for this series</p>
-            <p className="text-sm mt-2">Historical price data will appear here once ingested</p>
-          </div>
-        </CardBody>
-      </Card>
+      {/* Recent Values Table */}
+      <RecentValuesTable
+        indexSeriesId={indexSeries.id}
+        teamSlug={teamSlug}
+        unit={indexSeries.unit}
+        className="mt-6"
+      />
 
       <ConfirmModal
         open={deleteModalOpen}
