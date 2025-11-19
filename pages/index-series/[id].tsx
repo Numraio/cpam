@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import type { ReactElement } from 'react';
 import type { NextPageWithLayout } from 'types';
 import { AccountLayout } from '@/components/layouts';
@@ -94,17 +95,21 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <Button
-          size="sm"
-          variant="ghost"
-          leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
-          onClick={() => router.push('/index-series')}
-        >
-          Back to Index Series
-        </Button>
-      </div>
+    <>
+      <Head>
+        <title>{indexSeries.name} | Index Series</title>
+      </Head>
+      <div className="p-6">
+        <div className="mb-6">
+          <Button
+            size="sm"
+            variant="ghost"
+            leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
+            onClick={() => router.push('/index-series')}
+          >
+            Back to Index Series
+          </Button>
+        </div>
 
       <div className="flex justify-between items-start mb-8">
         <div>
@@ -276,7 +281,8 @@ const IndexSeriesDetailPage: NextPageWithLayout = () => {
         confirmVariant="danger"
         loading={isDeleting}
       />
-    </div>
+      </div>
+    </>
   );
 };
 
