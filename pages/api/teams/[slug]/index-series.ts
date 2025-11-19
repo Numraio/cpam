@@ -88,7 +88,7 @@ async function handleCreate(
       },
     });
 
-    // Auto-sync BLS data with full historical backfill
+    // Auto-sync BLS data with complete historical data
     if (provider === 'BLS') {
       // Extract BLS series ID from seriesCode (format: "BLS_CUUR0000SA0" or just "CUUR0000SA0")
       const blsSeriesId = seriesCode.startsWith('BLS_')
@@ -97,7 +97,7 @@ async function handleCreate(
 
       // Trigger BLS ingestion in background (don't await to avoid timeout)
       ingestBLSData(indexSeries.id, blsSeriesId, tenantId, {
-        yearsBack: 50, // Full historical backfill (most BLS series start in 1980s)
+        yearsBack: 100, // Fetch all available data (BLS series rarely go back more than 100 years)
         force: false,
         includeCatalog: true,
       }).catch((error) => {

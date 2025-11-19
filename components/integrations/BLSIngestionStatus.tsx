@@ -36,7 +36,6 @@ export default function BLSIngestionStatus({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
-  const [backfilling, setBackfilling] = useState(false);
 
   // Fetch ingestion status
   const fetchStatus = async () => {
@@ -94,41 +93,6 @@ export default function BLSIngestionStatus({
     }
   };
 
-  // Manual backfill (fetch historical data)
-  const handleBackfill = async () => {
-    const yearsBack = prompt('How many years of historical data to backfill?', '50');
-    if (!yearsBack) return;
-
-    try {
-      setBackfilling(true);
-      setError(null);
-
-      const response = await fetch(`/api/teams/${teamSlug}/index-series/${indexSeriesId}/bls-sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'backfill', yearsBack: parseInt(yearsBack, 10) }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Backfill failed');
-      }
-
-      const result = await response.json();
-
-      // Refresh status after backfill
-      await fetchStatus();
-
-      // Show success message
-      alert(
-        `Backfill completed! ${result.data.valuesIngested} new values ingested, ${result.data.valuesSkipped} skipped.`
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Backfill failed');
-      alert(`Backfill failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setBackfilling(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -240,7 +204,7 @@ export default function BLSIngestionStatus({
           <button
             className="btn btn-primary btn-sm"
             onClick={handleSync}
-            disabled={syncing || backfilling}
+            disabled={syncing}
           >
             {syncing ? (
               <>
@@ -269,40 +233,9 @@ export default function BLSIngestionStatus({
           </button>
 
           <button
-            className="btn btn-outline btn-sm"
-            onClick={handleBackfill}
-            disabled={syncing || backfilling}
-          >
-            {backfilling ? (
-              <>
-                <span className="loading loading-spinner loading-xs"></span>
-                Backfilling...
-              </>
-            ) : (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Backfill Historical
-              </>
-            )}
-          </button>
-
-          <button
             className="btn btn-ghost btn-sm"
             onClick={fetchStatus}
-            disabled={syncing || backfilling}
+            disabled={syncing}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
