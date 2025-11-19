@@ -92,10 +92,21 @@ async function handleUpdate(
   try {
     const { name, description, provider, dataType, unit, frequency } = req.body;
 
+    // First verify the series exists and belongs to this tenant
+    const existing = await prisma.indexSeries.findFirst({
+      where: {
+        id: seriesId,
+        tenantId,
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Index series not found' });
+    }
+
     const indexSeries = await prisma.indexSeries.update({
       where: {
         id: seriesId,
-        tenantId, // Ensure series belongs to tenant
       },
       data: {
         ...(name !== undefined && { name }),
@@ -128,11 +139,22 @@ async function handleDelete(
   seriesId: string
 ) {
   try {
-    // Delete index series
+    // First verify the series exists and belongs to this tenant
+    const indexSeries = await prisma.indexSeries.findFirst({
+      where: {
+        id: seriesId,
+        tenantId,
+      },
+    });
+
+    if (!indexSeries) {
+      return res.status(404).json({ error: 'Index series not found' });
+    }
+
+    // Delete index series (cascade will delete all associated IndexValues)
     await prisma.indexSeries.delete({
       where: {
         id: seriesId,
-        tenantId, // Ensure series belongs to tenant
       },
     });
 
