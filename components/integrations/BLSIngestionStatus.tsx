@@ -96,7 +96,7 @@ export default function BLSIngestionStatus({
 
   // Manual backfill (fetch historical data)
   const handleBackfill = async () => {
-    const yearsBack = prompt('How many years of historical data to backfill?', '10');
+    const yearsBack = prompt('How many years of historical data to backfill?', '50');
     if (!yearsBack) return;
 
     try {
