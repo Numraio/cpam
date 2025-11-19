@@ -126,7 +126,6 @@ export async function ingestBLSData(
             value: record.value,
             versionTag: 'FINAL', // BLS data is final
             providerTimestamp: new Date(),
-            metadata: record.metadata as any,
           },
         });
         valuesIngested++;
@@ -140,7 +139,6 @@ export async function ingestBLSData(
             value: record.value,
             versionTag: 'FINAL',
             providerTimestamp: new Date(),
-            metadata: record.metadata as any,
           },
         });
         valuesIngested++;
